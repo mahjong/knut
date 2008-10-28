@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Wed Oct 22 03:23:42 2008 -->
+<!--Generated with glade3 3.4.5 on Sat Oct 25 15:50:03 2008 -->
 <glade-interface>
   <widget class="GtkWindow" id="mainWindow">
     <property name="width_request">600</property>
     <property name="height_request">800</property>
     <property name="visible">True</property>
-    <property name="resizable">False</property>
     <signal name="destroy" handler="on_mainWindow_destroy"/>
     <child>
       <widget class="GtkVBox" id="main_vbox">
