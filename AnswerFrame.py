@@ -8,6 +8,7 @@ class AnswerFrame(gtk.Frame):
 
     def __init__(self, item=None):
         gtk.Frame.__init__(self)
+        self.item = None
         self.set_label(" Odpowiedź ")
         self.answer_type_combo = gtk.combo_box_new_text()
         self.answer_type_combo.insert_text(0, " Wybierz typ odpowiedzi ")
@@ -15,24 +16,39 @@ class AnswerFrame(gtk.Frame):
         self.answer_type_combo.insert_text(2, " Jednokrotnego wyboru ")
         self.answer_type_combo.insert_text(3, " Wielokrotnego wyboru ")
         self.answer_type_combo.insert_text(4, " Prawda/Fałsz ")
-        self.answer_type_combo.set_active(0)
         self.answer_type_combo.connect("changed", self.answer_type_combo_changed)
         self.answer_vbox = gtk.VBox()
         self.answer_vbox.pack_start(self.answer_type_combo, False, False, 0)
+        if item and item.get("type"):
+            self.item = item
+            self.answer_type_combo.set_active(self.get_type_index(item.get("type")))
+        else:
+            self.answer_type_combo.set_active(0)
         self.add(self.answer_vbox)
 
+    def get_type_index(self, type):
+        if type == "txt":
+            return 1
+        elif type == "one":
+            return 2
+        elif type == "mul":
+            return 3
+        elif type == "t/f":
+            return 4
+
     def answer_type_combo_changed(self, widget=None, data=None):
-        
         if len(self.answer_vbox.get_children()) > 1:#usuwanie poprzednich
            self.answer_vbox.remove(self.answer_vbox.get_children()[1])
 
 
         if self.answer_type_combo.get_active() == 1:# Tekstowa
-           self.text_view = gtk.TextView()
-           self.text_view.set_size_request(100,100)
-           self.text_view.set_wrap_mode(gtk.WRAP_WORD)
-           self.buffer = self.text_view.get_buffer()
-           self.answer_vbox.pack_start(self.text_view, False, False, 5)
+            self.text_view = gtk.TextView()
+            self.text_view.set_size_request(100,100)
+            self.text_view.set_wrap_mode(gtk.WRAP_WORD)
+            self.buffer = self.text_view.get_buffer()
+            if self.item and self.item.countchildren() == 2:
+                self.buffer.set_text(self.item.option.text)
+            self.answer_vbox.pack_start(self.text_view, False, False, 5)
         elif self.answer_type_combo.get_active() in (2,3):
             self.text_view  = {}
             self.buffer = {}
@@ -62,6 +78,8 @@ class AnswerFrame(gtk.Frame):
                             self.correct_btn[index] = gtk.RadioButton(self.correct_btn[0])
                     elif self.answer_type_combo.get_active() == 3:# wielokrotnego wyboru
                         self.correct_btn[index] = gtk.CheckButton()
+                    
+                       
                     self.text_view_hbox[index] = gtk.HBox(False, 0)
                     self.text_view_hbox[index].pack_start(self.text_view[index], False, False, 5)
                     self.text_view_hbox[index].pack_start(self.correct_btn[index], False, False, 0)
@@ -73,6 +91,17 @@ class AnswerFrame(gtk.Frame):
                     self.option_vbox[index].pack_start(self.text_view_hbox[index], False, False, 0)
                     self.option_vbox[index].pack_start(self.img_button_hbox[index], False, False, 0)
                     self.table.attach(self.option_vbox[index],i,i+1,j,j+1)
+
+                    if self.item and self.item.countchildren() > index+1:
+                        if self.item.option[index].text:
+                            self.buffer[index].set_text(self.item.option[index].text)
+                        if self.item.option[index].get("img"):
+                           self.add_img(self.item.option[index].get("img"), index)    
+                        if self.item.option[index].get("correct") == "true":
+                            self.correct_btn[index].set_active(True)
+                        else:
+                            self.correct_btn[index].set_active(False)
+                     
                     index += 1 
             
             self.answer_vbox.pack_start(self.table, False, False, 10) 
@@ -80,11 +109,16 @@ class AnswerFrame(gtk.Frame):
             self.answer_combo = gtk.combo_box_new_text()
             self.answer_combo.insert_text(0, " Prawda ")
             self.answer_combo.insert_text(1, " Fałsz ")
-            self.answer_combo.set_active(0)
-            self.answer_vbox.pack_start(self.answer_combo, False, False, 10)
-
-        self.show_all()
-
+            if self.item:
+                if self.item.option.get("correct") == "true":
+                    self.answer_combo.set_active(0)
+                else:
+                    self.answer_combo.set_active(1)
+            else:
+                self.answer_combo.set_active(0) 
+                self.answer_vbox.pack_start(self.answer_combo, False, False, 10) 
+        self.show_all() 
+        
     def img_button_clicked(self, widget=None, data=None):
         print("dodaje obrazek")
 

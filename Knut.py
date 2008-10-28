@@ -99,21 +99,48 @@ class Knut:
         self.main_vbox.show_all()
 
     def prev_btn_clicked(self, widget, data=None):
-        print("Poprzednie pytanie")
+        self.validate_input()
+       
+        if self.current_item == 0:#pierwsze pytanie, nie ma poprzedniego 
+            print("pierwsze")
+        elif ((self.current_item+1) == self.total_items):
+            if self.validation_error:
+                self.current_item -= 1
+                self.total_items -= 1
+                self.show_item(self.test.item[self.current_item])
+            else:
+                if self.test.countchildren() == self.total_items:
+                    self.test.replace(self.test.item[self.current_item], self.get_current_item())
+                else:
+                    self.test.append(self.get_current_item())
+                self.current_item -=1
+                self.show_item(self.test.item[self.current_item])
+        elif self.validation_error:
+            print self.validation_error
+        else:
+            self.test.replace(self.test.item[self.current_item], self.get_current_item())
+            self.current_item -=1
+            self.show_item(self.test.item[self.current_item])
+        print(etree.tostring(self.test, pretty_print=True))
 
     def next_btn_clicked(self, widget, data=None):
         self.validate_input()
         if self.validation_error:
             # okienko z bledem, albo komunikat w statusbarze
-            pass 
+            print validation_error
         elif (self.current_item+1) == self.total_items:
-            self.test.append(self.get_current_item())
+            if self.test.countchildren() == self.total_items:
+                self.test.replace(self.test.item[self.current_item], self.get_current_item()) 
+            else:
+                self.test.append(self.get_current_item())
             self.current_item += 1
             self.total_items +=1
             self.show_item(None) 
             # dodaj kolejne pytanie
-        else: # zapisz i wczytaj nastepne
-            pass
+        else: # zapisz i wczytaj kolejne
+            self.test.replace(self.test.item[self.current_item], self.get_current_item())
+            self.current_item += 1
+            self.show_item(self.test.item[self.current_item])
 
         print etree.tostring(self.test, pretty_print=True)
 

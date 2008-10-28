@@ -13,13 +13,29 @@ class QuestionFrame(gtk.Frame):
         self.text_view.set_size_request(100, 100)
         self.text_view.set_wrap_mode(gtk.WRAP_WORD)
         self.buffer = self.text_view.get_buffer()
+        if item and item.question.text:
+            self.buffer.set_text(item.question.text)
         self.img_button_hbox = gtk.HBox()
-        self.img_button = gtk.Button(" Dodaj obrazek ")
-        self.img_button.connect("clicked", self.img_button_clicked)
-        self.img_button_hbox.pack_start(self.img_button, False, False, 0)
         self.question_vbox = gtk.VBox()
-        self.question_vbox.pack_start(self.text_view, False, False, 0)
-        self.question_vbox.pack_start(self.img_button_hbox, False, False, 5)
+        if item and item.question.get("img"):
+            self.img_filename = item.question.get("img")
+            self.pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(self.img_filename, 200, 100)
+            self.image = gtk.image_new_from_pixbuf(self.pixbuf)
+            self.img_button = gtk.Button(" Zmień obrazek ")
+            self.img_button.connect("clicked", self.img_button_clicked)
+            self.remove_btn = gtk.Button(" Usuń obrazek ")
+            self.remove_btn.connect("clicked", self.remove_img)
+            self.img_button_hbox.pack_start(self.img_button, False, False, 0)
+            self.img_button_hbox.pack_start(self.remove_btn, False, False, 0)
+            self.question_vbox.pack_start(self.text_view, False, False, 0)
+            self.question_vbox.pack_start(self.img_button_hbox, False, False, 5)
+            self.question_vbox.pack_start(self.image, False, False , 5) 
+        else:
+            self.img_button = gtk.Button(" Dodaj obrazek ")
+            self.img_button.connect("clicked", self.img_button_clicked)
+            self.img_button_hbox.pack_start(self.img_button, False, False, 0)
+            self.question_vbox.pack_start(self.text_view, False, False, 0)
+            self.question_vbox.pack_start(self.img_button_hbox, False, False, 5)
         self.add(self.question_vbox)
 
     def img_button_clicked(self, widget=None, data=None):
@@ -59,6 +75,7 @@ class QuestionFrame(gtk.Frame):
         self.img_filename = img_filename
         self.pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(img_filename, 200, 100)
         self.image = gtk.image_new_from_pixbuf(self.pixbuf)
+        self.img_button.set_label(" Zmień obrazek ")
         self.remove_btn = gtk.Button(" Usuń obrazek ")
         self.remove_btn.connect("clicked", self.remove_img)
         self.img_button_hbox.pack_start(self.remove_btn, False, False, 0)
@@ -68,6 +85,7 @@ class QuestionFrame(gtk.Frame):
     def remove_img(self, widget=None):
         self.img_button_hbox.remove(self.remove_btn)
         self.question_vbox.remove(self.image)
+        self.img_button.set_label(" Dodaj obrazek ")
 
 import Knut
 if __name__ == "__main__":
