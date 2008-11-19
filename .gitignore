@@ -2,3 +2,7 @@
 *.swp
 *.pyc
 *.jpg
+*.jpeg
+*.html
+*.sqlite
+

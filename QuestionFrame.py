@@ -17,8 +17,8 @@ class QuestionFrame(gtk.Frame):
             self.buffer.set_text(item.question.text)
         self.img_button_hbox = gtk.HBox()
         self.question_vbox = gtk.VBox()
-        if item and item.question.get("img"):
-            self.img_filename = item.question.get("img")
+        if item and item.question.img:
+            self.img_filename = item.question.img
             self.pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(self.img_filename, 200, 100)
             self.image = gtk.image_new_from_pixbuf(self.pixbuf)
             self.img_button = gtk.Button(" Zmień obrazek ")
@@ -29,7 +29,7 @@ class QuestionFrame(gtk.Frame):
             self.img_button_hbox.pack_start(self.remove_btn, False, False, 0)
             self.question_vbox.pack_start(self.text_view, False, False, 0)
             self.question_vbox.pack_start(self.img_button_hbox, False, False, 5)
-            self.question_vbox.pack_start(self.image, False, False , 5) 
+            self.question_vbox.pack_start(self.image, False, False , 5)
         else:
             self.img_button = gtk.Button(" Dodaj obrazek ")
             self.img_button.connect("clicked", self.img_button_clicked)
@@ -43,8 +43,8 @@ class QuestionFrame(gtk.Frame):
 
         dialog = gtk.FileChooserDialog(" Dodaj obrazek... ",
                                  None,
-                                 gtk.FILE_CHOOSER_ACTION_OPEN, 
-                                 (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, 
+                                 gtk.FILE_CHOOSER_ACTION_OPEN,
+                                 (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                                   gtk.STOCK_OPEN, gtk.RESPONSE_OK ))
         dialog.set_default_response(gtk.RESPONSE_OK)
 
@@ -66,7 +66,7 @@ class QuestionFrame(gtk.Frame):
         elif response == gtk.RESPONSE_CANCEL:
             print "canceled"
         dialog.destroy()
-        
+
     def add_img(self, img_filename):
         if len(self.question_vbox.get_children()) > 2:
             self.question_vbox.remove(self.image)
@@ -80,7 +80,7 @@ class QuestionFrame(gtk.Frame):
         self.remove_btn.connect("clicked", self.remove_img)
         self.img_button_hbox.pack_start(self.remove_btn, False, False, 0)
         self.question_vbox.pack_start(self.image, False, False , 5)
-        self.show_all() 
+        self.show_all()
 
     def remove_img(self, widget=None):
         self.img_button_hbox.remove(self.remove_btn)
