@@ -25,10 +25,10 @@ class Knut:
         self.test = None
 
 
-        self.gladefile = "MainWindow.glade"
-        self.wTree = gtk.glade.XML(self.gladefile)
+        glade_main = "MainWindow.glade"
+        self.main_tree = gtk.glade.XML(glade_main)
 
-        self.main_vbox = self.wTree.get_widget("main_vbox")
+        self.main_vbox = self.main_tree.get_widget("main_vbox")
 
         dic = {"on_mainWindow_destroy":self.destroy_main_window,
                "on_test_new_activate":self.test_new,
@@ -37,7 +37,7 @@ class Knut:
                "on_test_save_as_activate":self.test_save_as,
                "on_test_quit_activate":self.test_quit}
 
-        self.wTree.signal_autoconnect(dic)
+        self.main_tree.signal_autoconnect(dic)
 
         self.checkdb()
 
@@ -56,8 +56,9 @@ class Knut:
         self.total_items = 1
         self.show_item(None)#wyswietla niewypelniony pytanie
 
+        self.read_config()
         #na razie nie tworze nowego, testu, tylko uzywam istniejacego
-        self.test = Test.get_by(id=1)
+        #self.test = Test.get_by(id=1)
 
         #przygotowanie testu
         #self.em = objectify.ElementMaker()
@@ -65,6 +66,11 @@ class Knut:
         #self.test = self.em.test()
         #self.test.set("xsi:schemaLocation","http://mahjong.rootnode.net/kvml kvml.xsd")
         #print etree.tostring(self.test, pretty_print=True)
+
+    def read_config(self):
+        glade_config = "TestConfig.glade"
+        self.config_tree = gtk.glade.XML(glade_config)
+
 
     def test_open(self, widget, data=None):
         print("otworz")
@@ -151,7 +157,7 @@ class Knut:
                 self.current_item -= 1
                 self.show_item(Item.get_by(test_id=self.test.id, order=self.current_item))
             else:
-                print("ERROR")
+                print("ERROR, prev_btn_clicked")
 
         session.commit()
 
@@ -179,7 +185,7 @@ class Knut:
                 self.current_item += 1
                 self.show_item(Item.get_by(test_id=self.test.id, order=self.current_item))
             else:
-                print("BLAD")
+                print("ERROR, next_btn_clicked")
 
         session.commit()
 
