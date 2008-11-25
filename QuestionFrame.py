@@ -1,7 +1,7 @@
 #encoding:utf-8
 #!/usr/bin/env python
 
-import gtk, pygtk
+import gtk, pygtk, os
 
 class QuestionFrame(gtk.Frame):
     """ Klasa zawierająca elementy pytania """
@@ -13,13 +13,15 @@ class QuestionFrame(gtk.Frame):
         self.text_view.set_size_request(100, 100)
         self.text_view.set_wrap_mode(gtk.WRAP_WORD)
         self.buffer = self.text_view.get_buffer()
-        if item and item.question.text:
-            self.buffer.set_text(item.question.text)
+        self.item = item
+        if self.item and self.item.question.text:
+            self.buffer.set_text(self.item.question.text)
         self.img_button_hbox = gtk.HBox()
         self.question_vbox = gtk.VBox()
-        if item and item.question.img:
-            self.img_filename = item.question.img
-            self.pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(self.img_filename, 200, 100)
+        if self.item and self.item.question.img:
+            self.img_filename = self.item.question.img
+            dir_path = "files/%s/%s"%(self.item.test_id, self.item.order)
+            self.pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(os.path.join(dir_path,self.img_filename), 200, 100)
             self.image = gtk.image_new_from_pixbuf(self.pixbuf)
             self.img_button = gtk.Button(" Zmień obrazek ")
             self.img_button.connect("clicked", self.img_button_clicked)
@@ -71,6 +73,9 @@ class QuestionFrame(gtk.Frame):
         if len(self.question_vbox.get_children()) > 2:
             self.question_vbox.remove(self.image)
             self.img_button_hbox.remove(self.remove_btn)
+            if os.path.dirname(self.img_filename) == "":
+                os.remove("files/%s/%s/%s"%(self.item.test_id, self.item.order, self.img_filename))
+
 
         self.img_filename = img_filename
         self.pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(img_filename, 200, 100)
@@ -86,6 +91,9 @@ class QuestionFrame(gtk.Frame):
         self.img_button_hbox.remove(self.remove_btn)
         self.question_vbox.remove(self.image)
         self.img_button.set_label(" Dodaj obrazek ")
+        if os.path.dirname(self.img_filename) == "":
+            os.remove("files/%s/%s/%s"%(self.item.test_id, self.item.order, self.img_filename))
+        self.img_filename = None
 
 import Knut
 if __name__ == "__main__":

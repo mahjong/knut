@@ -11,7 +11,7 @@ class Test(Entity):
     time = Field(Integer)
     instructions = Field(Unicode(256))
     language = Field(Unicode(2))
-    item = OneToMany('Item')
+    item = OneToMany('Item', cascade="all")
 
     def __repr__(self):
         return "<Test %s ,by %s>"%(self.title, self.author)
@@ -20,8 +20,8 @@ class Item(Entity):
     order = Field(Integer)
     type = Field(Unicode(3))
     test = ManyToOne('Test')
-    question = OneToOne('Question', inverse='item', cascade="all, delete-orphan")
-    option = OneToMany('Option', cascade="all, delete-orphan")
+    question = OneToOne('Question', inverse='item', cascade="all")
+    option = OneToMany('Option', cascade="all ")
 
     def __repr__(self):
         return "<Item %s, type: %s, test: %s>"%(self.order, self.type, self.test)
