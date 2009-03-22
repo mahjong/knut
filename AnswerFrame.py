@@ -1,7 +1,7 @@
 #encoding:utf-8
 #!/usr/bin/env python
 
-import gtk, pygtk
+import gtk, pygtk, os
 
 class AnswerFrame(gtk.Frame):
     """ Klasa zawierająca elementy odpowiedzi """
@@ -21,6 +21,7 @@ class AnswerFrame(gtk.Frame):
         self.answer_vbox.pack_start(self.answer_type_combo, False, False, 0)
         if item and item.type:
             self.item = item
+            self.dir_path = "files/%s/%s"%(self.item.test_id, self.item.order)
             self.answer_type_combo.set_active(self.get_type_index(item.type))
         else:
             self.answer_type_combo.set_active(0)
@@ -91,12 +92,12 @@ class AnswerFrame(gtk.Frame):
                     self.option_vbox[index].pack_start(self.text_view_hbox[index], False, False, 0)
                     self.option_vbox[index].pack_start(self.img_button_hbox[index], False, False, 0)
                     self.table.attach(self.option_vbox[index],i,i+1,j,j+1)
-
                     if self.item and len(self.item.option) > index:
                         if self.item.option[index].text:
                             self.buffer[index].set_text(self.item.option[index].text)
                         if self.item.option[index].img:
-                           self.add_img(self.item.option[index].img, index)
+                            self.img_filename[index] = self.item.option[index].img
+                            self.add_img(os.path.join(self.dir_path, self.item.option[index].img), index)
                         if self.item.option[index].correct:
                             self.correct_btn[index].set_active(True)
                         else:
@@ -110,13 +111,14 @@ class AnswerFrame(gtk.Frame):
             self.answer_combo.insert_text(0, " Prawda ")
             self.answer_combo.insert_text(1, " Fałsz ")
             if self.item:
-                if self.item.option.get("correct") == "true":
+                if self.item.option[0].correct == True:
                     self.answer_combo.set_active(0)
                 else:
                     self.answer_combo.set_active(1)
             else:
                 self.answer_combo.set_active(0)
-                self.answer_vbox.pack_start(self.answer_combo, False, False, 10)
+            
+            self.answer_vbox.pack_start(self.answer_combo, False, False, 10)
         self.show_all()
 
     def img_button_clicked(self, widget=None, data=None):
@@ -143,6 +145,7 @@ class AnswerFrame(gtk.Frame):
 
         response = dialog.run()
         if response == gtk.RESPONSE_OK:
+            self.img_filename[data] = dialog.get_filename()
             self.add_img(dialog.get_filename(), data)
         elif response == gtk.RESPONSE_CANCEL:
             print "canceled"
@@ -152,8 +155,9 @@ class AnswerFrame(gtk.Frame):
         if len(self.option_vbox[index].get_children()) > 2:
             self.option_vbox[index].remove(self.image[index])
             self.img_button_hbox[index].remove(self.remove_btn[index])
+            if os.path.dirname(self.img_filename) == "":
+                os.remove(os.path.join(self.dir_path, self.img_filename))
 
-        self.img_filename[index] = img_filename
         self.pixbuf[index] = gtk.gdk.pixbuf_new_from_file_at_size(img_filename, 200, 100)
         self.image[index] = gtk.image_new_from_pixbuf(self.pixbuf[index])
         self.remove_btn[index] = gtk.Button(" Usuń obrazek ")
@@ -163,10 +167,13 @@ class AnswerFrame(gtk.Frame):
         self.option_vbox[index].pack_start(self.image[index], False, False , 5)
         self.show_all()
 
-    def remove_img(self, widge, index):
+    def remove_img(self, widget, index):
         self.img_button_hbox[index].remove(self.remove_btn[index])
         self.option_vbox[index].remove(self.image[index])
         self.img_button[index].set_label(" Dodaj obrazek ")
+        if os.path.dirname(self.img_filename[index]) == "":
+            os.remove(os.path.join(self.dir_path, self.img_filename[index]))
+        self.img_filename[index] = None
 
 import Knut
 if __name__ == "__main__":
