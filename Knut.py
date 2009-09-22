@@ -21,30 +21,31 @@ import shutil
 import tarfile
 import httplib
 import mimetools
+from Print import Print
 
 class Knut:
-    """ Główne okno programu """
+    """ Knut - Knowledge Assesment """
     def __init__(self):
- 
+
         self.test = None
         self.mainVboxStatus = 0
         self.program_mode = None
         self.load_server_conf()
         wTree = gtk.glade.XML("Knut.glade","mainWindow")
- 
+
         self.vbox_main = wTree.get_widget("vbox_main")
- 
+
         dic = {"on_mainWindow_destroy":self.destroy_main_window,
                "on_test_new_activate":self.test_new,
                "on_test_browse_activate":self.test_browse,
                "on_test_list_download_activate":self.test_list_download,
                "on_test_quit_activate":self.destroy_main_window,
                "on_server_settings_activate":self.show_server_config_window}
- 
+
         wTree.signal_autoconnect(dic)
- 
+
         self.checkdb()
-        
+
     def test_new(self, widget=None, data=None):
         """ Tworzenie nowego testu """
 
@@ -65,6 +66,11 @@ class Knut:
 
         self.clearMainVbox()
         self.program_mode = 2
+
+
+        self.lbl_browse = gtk.Label()
+        self.lbl_browse.set_markup('<span foreground="blue"><b>Testy w bazie lokalnej</b></span>')
+        self.vbox_main.pack_start(self.lbl_browse, False, False)
 
         self.treeView = TreeViewTestBrowser.TreeViewTestBrowser(Test.query.offset(data).limit(10).all(), gtk.ListStore(str,str,str))
         self.vbox_main.pack_start(self.treeView, False, False)
@@ -96,11 +102,14 @@ class Knut:
         self.btn_test_delete.connect("clicked", self.test_delete, data)
         self.btn_upload = gtk.Button(" Wyślij na serwer ")
         self.btn_upload.connect("clicked", self.test_upload, data)
+        self.btn_print = gtk.Button(" Drukuj ")
+        self.btn_print.connect("clicked", self.test_print, data)
         self.hbox_browser_actions = gtk.HBox()
         self.hbox_browser_actions.pack_start(self.btn_test_open, False, False)
-        self.hbox_browser_actions.pack_start(self.btn_test_edit_settings, False, False)        
+        self.hbox_browser_actions.pack_start(self.btn_test_edit_settings, False, False)
         self.hbox_browser_actions.pack_start(self.btn_test_delete, False, False)
         self.hbox_browser_actions.pack_start(self.btn_upload, False, False)
+        self.hbox_browser_actions.pack_start(self.btn_print, False, False)
         self.vbox_main.pack_start(self.hbox_browser_actions, False, False)
 
         self.vbox_main.show_all()
@@ -111,17 +120,24 @@ class Knut:
         if (not self.server_conf) or self.server_conf==['']:
             self.show_msg(" Brak ustawień serwera ")
             return None
-        
+
         boundary = mimetools.choose_boundary()
         body_list = []
         body_list = ["--%s--"%boundary, "Content-Disposition: form-data; name=login", "", self.server_conf[1], "--%s--"%boundary, "Content-Disposition: form-data; name=password", "", self.server_conf[2], "--%s--"%boundary]
         body = "\r\n".join(body_list)
         headers = {"Content-Type": "multipart/form-data; boundary=%s"%boundary, "Content-Length": str(len(body))}
         connection = httplib.HTTPConnection(self.server_conf[0])
-        connection.request("POST","/test_list/", body, headers)
+        
+        try:
+            connection.request("POST","/test_list/", body, headers)
+        except:
+            raise
+            print(sys.exc_info()[0].__name__)
+            #return show_alert()
         response = connection.getresponse()
         re = response.read()
         try:
+            print re
             self.tests = objectify.fromstring(re)
             if self.tests.countchildren() > 0:
                 self.test_browse_from_server()
@@ -131,6 +147,7 @@ class Knut:
                 msg.run()
                 msg.destroy()
         except:
+            raise
             self.show_msg(" Nie udało się pobrać listy testów ")
             return None
 
@@ -139,11 +156,16 @@ class Knut:
         msg.set_title(" Błąd ")
         msg.run()
         msg.destroy()
-        self.program_mode = 0
+        #self.program_mode = 0
 
     def test_browse_from_server(self, widget=None, data=0):
         self.clearMainVbox()
         self.program_mode = 3
+
+        self.lbl_browse = gtk.Label()
+        self.lbl_browse.set_markup('<span foreground="blue"><b>Testy na serwerze</b></span>')
+        self.vbox_main.pack_start(self.lbl_browse, False, False)
+
         self.treeView = TreeViewTestBrowser.TreeViewTestBrowser(self.tests.test[data:data+10], gtk.ListStore(str,str,str))
         self.vbox_main.pack_start(self.treeView, False, False)
 
@@ -178,7 +200,8 @@ class Knut:
         self.vbox_main.show_all()
 
     def test_delete_from_server(self, widget, data):
-        self.get_current_test(data)
+        if not self.get_current_test(data):
+            return None
         boundary = mimetools.choose_boundary()
         body_list = []
         body_list = ["--%s--"%boundary, "Content-Disposition: form-data; name=login", "", self.server_conf[1], "--%s--"%boundary, "Content-Disposition: form-data; name=password", "", self.server_conf[2], "--%s--"%boundary]
@@ -205,7 +228,8 @@ class Knut:
         self.test_list_download(get_config=False)
 
     def test_download(self, widget, data):
-        self.get_current_test(data)
+        if not self.get_current_test(data):
+            return None
 
         self.test = Test()
         session.commit()
@@ -249,7 +273,7 @@ class Knut:
         answers_file = open("files/%s/answers.xml"%self.test.id, "w")
         answers_file.write(response.fp.read())
         answers_file.close()
-        
+
         #zapisanie testu
         questions_file = tarfile.open("files/%s/questions.tar.bz2"%self.test.id,"r")
         questions_file.extractall(path="files/%s/"%self.test.id)
@@ -257,7 +281,7 @@ class Knut:
 
         test_xml = objectify.parse("files/%s/test.xml"%self.test.id).getroot()
         answers_xml = objectify.parse("files/%s/answers.xml"%self.test.id).getroot()
-        
+
         self.test.title = u(test_xml.config.title)
         self.test.author = u(test_xml.config.author)
         self.test.instructions = u(test_xml.config.instructions)
@@ -265,29 +289,29 @@ class Knut:
         self.test.password = u(test_xml.config.password)
         self.test.version = int(test_xml.config.version)
         session.commit()
-        
+
         test_xml.remove(test_xml.config)
-        
-        
+
+
         for item_xml, answer_xml in zip(test_xml.getchildren(), answers_xml.getchildren()):
             item_type = u(item_xml.get("type"))
             item = Item(order=int(item_xml.get("id")), type=item_type)
             self.test.item.append(item)
             session.commit()
-            
+
             if item_xml.question.text == None:
                 question_text = u''
             else:
                 question_text = u(item_xml.question.text)
-                
+
             if item_xml.question.get("img") == None:
                 question_img = u''
             else:
                 question_img = u(item_xml.question.get("img"))
-            
+
             item.question = Question(text = question_text, img = question_img)
             item_xml.remove(item_xml.question)
-            
+
             if item_type == "txt":
                 item.option.append(Option(correct=True, text=u(answer_xml.option[0].text), img=u''))
             elif item_type == "t/f":
@@ -298,22 +322,23 @@ class Knut:
                         option_text = u''
                     else:
                         option_text = u(option_xml.text)
-                        
+
                     if option_xml.get("img") == None:
                         option_img = u''
                     else:
                         option_img = u(option_xml.get("img"))
-                        
+
                     option_correct = {'true':True, 'false':False}[answer_option_xml.get("correct")]
                     item.option.append(Option(correct=option_correct, text=option_text, img=option_img ))
-            
+
             item.update()
             session.commit()
 
-        
+            self.test_browse()
 
     def test_delete(self, widget=None, data=None):
-        self.get_current_test(data)
+        if not self.get_current_test(data):
+            return None
         msg = gtk.MessageDialog(parent=None, type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_OK_CANCEL)
         msg.set_title(" Usuwanie testu ")
         msg.label.set_text(" Usunąć wybrany test? ")
@@ -327,7 +352,8 @@ class Knut:
         self.test_browse()
 
     def test_open(self, widget=None, data=None):
-        self.get_current_test(data)
+        if not self.get_current_test(data):
+            return None
         self.test.version += 1
         session.commit()
         self.current_item = 1
@@ -339,10 +365,15 @@ class Knut:
             self.show_item(None)
 
     def test_edit_settings(self, widget=None, data=None):
-        self.get_current_test(data)
+        if not self.get_current_test(data):
+            return None
         self.read_config(self.test)
         self.test_browse()
-
+    
+    def test_print(self, widget=None, data=None):
+        if not self.get_current_test(data):
+            return None
+        p = Print(self.test)
 
     def read_config(self, existingConfig, warning=None):
         wTree = gtk.glade.XML("Knut.glade", "testConfigDlg")
@@ -373,7 +404,7 @@ class Knut:
                 nTitle = u(enTitle.get_text())
                 nAuthor = u(enAuthor.get_text())
                 insStart, insEnd = txtvInstructionsBuffer.get_bounds()
-                nInstructions = u(txtvInstructionsBuffer.get_text(insStart,insEnd))
+                nInstructions = u(txtvInstructionsBuffer.get_text(insStart,insEnd))[:256]
                 nTime = int(enTime.get_text())
                 nPassword = u(enPassword.get_text())
                 self.test = Test(title=nTitle,author=nAuthor,instructions=nInstructions,time=nTime,password=nPassword, version=1)
@@ -385,7 +416,7 @@ class Knut:
                 self.test.title = u(enTitle.get_text())
                 self.test.author = u(enAuthor.get_text())
                 insStart, insEnd = txtvInstructionsBuffer.get_bounds()
-                self.test.instructions = u(txtvInstructionsBuffer.get_text(insStart,insEnd))
+                self.test.instructions = u(txtvInstructionsBuffer.get_text(insStart,insEnd))[:256]
                 self.test.time = int(enTime.get_text())
                 self.test.password = u(enPassword.get_text())
                 self.test.update()
@@ -398,15 +429,15 @@ class Knut:
         else: #Cancel
             configDlg.destroy()
             return False
-       
+
     def load_server_conf(self):
-        
+
         if os.path.exists("settings.txt"):
             settings_file = file("settings.txt","rb")
             self.server_conf = settings_file.read().split(';')
         else:
-            self.server_conf = None  
-        
+            self.server_conf = None
+
     def show_server_config_window(self, warning=None):
 
         wTree = gtk.glade.XML("Knut.glade", "serverConfigDlg")
@@ -414,12 +445,12 @@ class Knut:
         enAddress = wTree.get_widget("enAddress")
         enLogin = wTree.get_widget("enLogin")
         enPassword = wTree.get_widget("enPassword")
-        
+
         if self.server_conf and self.server_conf!=['']:
             enAddress.set_text(self.server_conf[0])
             enLogin.set_text(self.server_conf[1])
             enPassword.set_text(self.server_conf[2])
-                       
+
 
         if warning == True:
             labWarning = wTree.get_widget("labWarning2")
@@ -436,8 +467,11 @@ class Knut:
             serverConfigDlg.destroy()
 
     def test_upload(self, widget=None, data=None):
-        self.get_current_test(data)
-        self.show_server_config_window()
+        if not self.get_current_test(data):
+            return None
+        if (not self.server_conf) or self.server_conf==['']:
+            self.show_msg(" Brak ustawień serwera ")
+            return None
         #przygotowanie testu
         em = objectify.ElementMaker()
         em._nsmap = {None:"http://mahjong.rootnode.net/kvml"}
@@ -552,23 +586,28 @@ class Knut:
 
     def get_current_test(self, data):
         """ zapisuje test w zmiennej self.test """
-        if self.program_mode == 1: #zapisz jesli nie ma bledow
-            self.validate_input()
-            if not self.validation_error:
-                self.add_or_update_item()
-        elif self.program_mode == 2: #wybierz zaznaczony test
-            iter = self.treeView.get_selection().get_selected()[1]
-            index = self.treeView.listStore.get_path(iter)[0]
-            self.test = Test.query.offset(data+index).limit(1).first()
-        elif self.program_mode == 3:
-            iter = self.treeView.get_selection().get_selected()[1]
-            index = self.treeView.listStore.get_path(iter)[0]
-            self.test_id = self.tests.test[data+index].id
-            self.test_password = self.tests.test[data+index].password
-            self.test_title = self.tests.test[data+index].title
+        try:
+            if self.program_mode == 1: #zapisz jesli nie ma bledow
+                self.validate_input()
+                if not self.validation_error:
+                    self.add_or_update_item()
+            elif self.program_mode == 2: #wybierz zaznaczony test
+                iter = self.treeView.get_selection().get_selected()[1]
+                index = self.treeView.listStore.get_path(iter)[0]
+                self.test = Test.query.offset(data+index).limit(1).first()
+            elif self.program_mode == 3:
+                iter = self.treeView.get_selection().get_selected()[1]
+                index = self.treeView.listStore.get_path(iter)[0]
+                self.test_id = self.tests.test[data+index].id
+                self.test_password = self.tests.test[data+index].password
+                self.test_title = self.tests.test[data+index].title
+            return True
+        except:
+            self.show_msg(" Nie odnaleziono testu ")
+            return False
 
     def destroy_main_window(self, widget, data=None):
-        
+
         if self.server_conf and self.server_conf!=['']:
             settings_file = file("settings.txt","w")
             settings_file.write("%s;%s;%s"%(self.server_conf[0],self.server_conf[1],self.server_conf[2]))
@@ -578,16 +617,19 @@ class Knut:
 
     def clearMainVbox(self):
         #usuwanie poprzednich
-        print self.program_mode
-        if self.program_mode == 1:
-            self.vbox_main.remove(self.nav_hbox)
-            self.vbox_main.remove(self.question_frame)
-            self.vbox_main.remove(self.answer_frame)
-        if self.program_mode in (2,3):
-            self.vbox_main.remove(self.treeView)
-            self.vbox_main.remove(self.hbox_browser_navigation)
-            self.vbox_main.remove(self.hbox_browser_actions)
 
+        if self.program_mode == 1:
+            if self.nav_hbox:
+                self.vbox_main.remove(self.nav_hbox)
+                self.vbox_main.remove(self.question_frame)
+                self.vbox_main.remove(self.answer_frame)
+        if self.program_mode in (2,3):
+            if self.lbl_browse:
+                self.vbox_main.remove(self.lbl_browse)
+                self.vbox_main.remove(self.treeView)
+                self.vbox_main.remove(self.hbox_browser_navigation)
+                self.vbox_main.remove(self.hbox_browser_actions)
+                self.lbl_browse, self.treeView, self.hbox_browser_navigation, self.hbox_browser_actions = None, None, None, None
 
     def show_item(self, item=None):
         self.clearMainVbox()
@@ -694,7 +736,6 @@ class Knut:
 
         item.update()
         session.commit()
-        
 
     def prepare_img(self, img_path, dir_path, prefix):
         img_filename = os.path.basename(img_path)
@@ -714,7 +755,7 @@ class Knut:
             return "mul"
         elif id == 4:
             return "t/f"
-        
+
     def checkdb(self):
         """ Przygotowuje baze danych """
         if os.path.exists("tests.sqlite"):

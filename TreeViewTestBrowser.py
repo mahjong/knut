@@ -17,7 +17,10 @@ class TreeViewTestBrowser(gtk.TreeView):
         self.tvColVersion = gtk.TreeViewColumn("Wersja")
 
         for test in tests:
-            self.listStore.append([test.title, test.instructions, test.version])
+            if type(test.instructions) is unicode:
+                self.listStore.append([test.title, test.instructions[:50], test.version])
+            else:
+                self.listStore.append([test.title, test.instructions.text[:50], test.version])
 
         self.append_column(self.tvColTitle)
         self.append_column(self.tvColInstructions)
