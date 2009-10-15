@@ -10,6 +10,7 @@ class Test(Entity):
     instructions = Field(Unicode(256))
     version = Field(Integer)
     password = Field(Unicode(30))
+    category = Field(Unicode(30))
     item = OneToMany('Item', cascade="all")
 
     def __repr__(self):

@@ -24,6 +24,12 @@ import mimetools
 from Print import Print
 
 class Knut:
+    TEST_CATEGORIES = {'Różności': 0,
+                       'Matematyka': 1,
+                       'Informatyka': 2,
+                       'Geografia': 3,
+                       'Historia': 4,}
+    
     """ Knut - Knowledge Assesment """
     def __init__(self):
 
@@ -35,14 +41,15 @@ class Knut:
 
         self.vbox_main = wTree.get_widget("vbox_main")
 
-        dic = {"on_mainWindow_destroy":self.destroy_main_window,
+        dict = {"on_mainWindow_destroy":self.destroy_main_window,
                "on_test_new_activate":self.test_new,
                "on_test_browse_activate":self.test_browse,
                "on_test_list_download_activate":self.test_list_download,
+               "on_test_list_download_public_activate":self.test_list_download,
                "on_test_quit_activate":self.destroy_main_window,
                "on_server_settings_activate":self.show_server_config_window}
 
-        wTree.signal_autoconnect(dic)
+        wTree.signal_autoconnect(dict)
 
         self.checkdb()
 
@@ -63,18 +70,17 @@ class Knut:
 
     def test_browse(self, widget=None, data=0):
         """ Przeglądanie testów z bazy danych """
-
+        
         self.clearMainVbox()
         self.program_mode = 2
-
 
         self.lbl_browse = gtk.Label()
         self.lbl_browse.set_markup('<span foreground="blue"><b>Testy w bazie lokalnej</b></span>')
         self.vbox_main.pack_start(self.lbl_browse, False, False)
 
-        self.treeView = TreeViewTestBrowser.TreeViewTestBrowser(Test.query.offset(data).limit(10).all(), gtk.ListStore(str,str,str))
+        self.treeView = TreeViewTestBrowser.TreeViewTestBrowser(Test.query.offset(data).limit(10).all(), gtk.ListStore(str,str,str,str))
         self.vbox_main.pack_start(self.treeView, False, False)
-
+        
         self.btn_prev_page = gtk.Button(" << Poprzednie ")
         if data!=0:
             self.btn_prev_page.connect("clicked",self.test_browse, data-10)
@@ -117,30 +123,42 @@ class Knut:
     def test_list_download(self, widget=None, data=None, get_config=True):
         """ Przeglądanie testów z serwera """
 
+        if widget:
+            self.public = widget.get_name() == 'test_list_download_public'
+
         if (not self.server_conf) or self.server_conf==['']:
             self.show_msg(" Brak ustawień serwera ")
             return None
 
         boundary = mimetools.choose_boundary()
         body_list = []
-        body_list = ["--%s--"%boundary, "Content-Disposition: form-data; name=login", "", self.server_conf[1], "--%s--"%boundary, "Content-Disposition: form-data; name=password", "", self.server_conf[2], "--%s--"%boundary]
+        if self.public:
+            body_list = ['']
+        else:
+            body_list = ["--%s--"%boundary, "Content-Disposition: form-data; name=login", "", self.server_conf[1], "--%s--"%boundary, "Content-Disposition: form-data; name=password", "", self.server_conf[2], "--%s--"%boundary]
         body = "\r\n".join(body_list)
         headers = {"Content-Type": "multipart/form-data; boundary=%s"%boundary, "Content-Length": str(len(body))}
         connection = httplib.HTTPConnection(self.server_conf[0])
         
         try:
-            connection.request("POST","/test_list/", body, headers)
+            if self.public:
+                connection.request("POST","/test_list_public/", body, headers)
+            else:
+                connection.request("POST","/test_list/", body, headers)
         except:
-            raise
             print(sys.exc_info()[0].__name__)
             #return show_alert()
-        response = connection.getresponse()
-        re = response.read()
         try:
-            print re
+            response = connection.getresponse()
+            re = response.read()
+#            print re
             self.tests = objectify.fromstring(re)
             if self.tests.countchildren() > 0:
-                self.test_browse_from_server()
+                if self.public:
+                    title = 'Testy publiczne na serwerze'
+                else:
+                    title = 'Testy użytkownika na serwerze'
+                self.test_browse_from_server(title=title)
             else:
                 msg = gtk.MessageDialog(message_format=" Na serwerze nie ma testów ",flags=gtk.DIALOG_MODAL, type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_OK)
                 msg.set_title(" Błąd ")
@@ -158,25 +176,43 @@ class Knut:
         msg.destroy()
         #self.program_mode = 0
 
-    def test_browse_from_server(self, widget=None, data=0):
+    def test_browse_from_server(self, widget=None, data=0, title='', type=''):
+        print type
         self.clearMainVbox()
         self.program_mode = 3
 
         self.lbl_browse = gtk.Label()
-        self.lbl_browse.set_markup('<span foreground="blue"><b>Testy na serwerze</b></span>')
+        self.lbl_browse.set_markup('<span foreground="blue"><b>%s</b></span>' % title)
         self.vbox_main.pack_start(self.lbl_browse, False, False)
-
-        self.treeView = TreeViewTestBrowser.TreeViewTestBrowser(self.tests.test[data:data+10], gtk.ListStore(str,str,str))
+        
+        if type == 'results':
+            self.treeView = TreeViewTestBrowser.TreeViewTestBrowser(self.results.result[data:data+10], gtk.ListStore(str,str,str,str), labels=['Id Ucznia', 'Punkty', 'Wynik w procentowo', 'Data'], tv_type='results')
+        elif type == 'answers':
+            self.treeView = TreeViewTestBrowser.TreeViewTestBrowser(self.answers.getchildren(), gtk.ListStore(str, str, str, str, str, str), labels=['Nr pytania', 'A)', 'B)', 'C)', 'D)' ], tv_type='answers')
+        else:
+            self.treeView = TreeViewTestBrowser.TreeViewTestBrowser(self.tests.test[data:data+10], gtk.ListStore(str,str,str,str))
         self.vbox_main.pack_start(self.treeView, False, False)
 
+        if type == 'answers':
+            self.vbox_main.show_all()
+            return
+            
         self.btn_prev_page = gtk.Button(" << Poprzednie ")
         if data!=0:
             self.btn_prev_page.connect("clicked",self.test_browse_from_server, data-10)
         else:
             self.btn_prev_page.set_sensitive(False)
-        self.labPage = gtk.Label(" Testy: %s - %s (%s)  "%((data+1), data+len(self.tests.test[data:data+10]), self.tests.countchildren()))
+        if type == 'results':
+            self.labPage = gtk.Label(" Wyniki: %s - %s (%s)  "%((data+1), data+len(self.results.result[data:data+10]), self.results.countchildren()))
+        else:
+            self.labPage = gtk.Label(" Testy: %s - %s (%s)  "%((data+1), data+len(self.tests.test[data:data+10]), self.tests.countchildren()))
         self.btn_next_page = gtk.Button(" Następne >> ")
-        if data+10 < Test.query.count():
+        if type == 'results':
+            items_count = self.results.countchildren()
+        else:
+            items_count = Test.query.count()
+        
+        if data+10 < items_count:
             self.btn_next_page.connect("clicked",self.test_browse_from_server, data+10)
         else:
             self.btn_next_page.set_sensitive(False)
@@ -187,17 +223,113 @@ class Knut:
         self.hbox_browser_navigation.pack_start(self.btn_next_page, False, False)
 
         self.vbox_main.pack_start(self.hbox_browser_navigation, False, False)
-
-        self.btn_test_delete_from_server = gtk.Button(" Usuń z serwera ")
-        self.btn_test_delete_from_server.connect("clicked", self.test_delete_from_server, data)
-        self.btn_test_download = gtk.Button(" Pobierz z serwera ")
-        self.btn_test_download.connect("clicked", self.test_download, data)
+        if not self.public and type != 'results':
+            self.btn_test_delete_from_server = gtk.Button(" Usuń z serwera ")
+            self.btn_test_delete_from_server.connect("clicked", self.test_delete_from_server, data)
+            self.btn_test_download_results_list = gtk.Button(" Pobierz wyniki ")
+            self.btn_test_download_results_list.connect("clicked", self.test_download_results_list, data)
+        if type == 'results':
+            self.btn_answers_download = gtk.Button(" Pobierz odpowiedzi ")
+            self.btn_answers_download.connect("clicked", self.answers_download, data)
+        else:
+            self.btn_test_download = gtk.Button(" Pobierz z serwera ")
+            self.btn_test_download.connect("clicked", self.test_download, data)
         self.hbox_browser_actions = gtk.HBox()
-        self.hbox_browser_actions.pack_start(self.btn_test_delete_from_server, False, False)
-        self.hbox_browser_actions.pack_start(self.btn_test_download, False, False)
+        if not self.public and type != 'results':
+            self.hbox_browser_actions.pack_start(self.btn_test_delete_from_server, False, False)
+            self.hbox_browser_actions.pack_start(self.btn_test_download_results_list, False, False)
+        if type == 'results':
+            self.hbox_browser_actions.pack_start(self.btn_answers_download, False, False)
+        else:
+            self.hbox_browser_actions.pack_start(self.btn_test_download, False, False)
         self.vbox_main.pack_start(self.hbox_browser_actions, False, False)
 
         self.vbox_main.show_all()
+        
+    def answers_download(self, widget, data):
+        """ Pobieranie odpowiedzi danego ucznia """
+        if not self.get_selected_results(data):
+            return None
+        
+        if (not self.server_conf) or self.server_conf==['']:
+            self.show_msg(" Brak ustawień serwera ")
+            return None
+        
+        boundary = mimetools.choose_boundary()
+        body_list = []
+        body_list = ["--%s--"%boundary, "Content-Disposition: form-data; name=login", "", self.server_conf[1], "--%s--"%boundary, 
+                     "Content-Disposition: form-data; name=password", "", self.server_conf[2], "--%s--"%boundary,
+                     "Content-Disposition: form-data; name=test-id", "", str(self.test_id), "--%s--"%boundary,
+                     "Content-Disposition: form-data; name=user-id", "", str(self.result_username), "--%s--"%boundary,
+                     "Content-Disposition: form-data; name=result-id", "", str(self.result_id), "--%s--"%boundary,]
+        body = "\r\n".join(body_list)
+        headers = {"Content-Type": "multipart/form-data; boundary=%s"%boundary, "Content-Length": str(len(body))}
+        connection = httplib.HTTPConnection(self.server_conf[0])
+        
+        try:
+            connection.request("POST","/user_answers_download/", body, headers)
+        except:
+            print(sys.exc_info()[0].__name__)
+            #return show_alert()
+        try:
+            response = connection.getresponse()
+            re = response.read()
+            print re
+            self.answers = objectify.fromstring(re)
+            if self.answers.countchildren() > 0:
+                title = ' Odpowiedzi ucznia: %s' % self.result_username
+                self.test_browse_from_server(title=title, type='answers')
+            else:
+                msg = gtk.MessageDialog(message_format=" Na serwerze nie ma odpowiedzi ucznia %s " % self.result_username,flags=gtk.DIALOG_MODAL, type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_OK)
+                msg.set_title(" Błąd ")
+                msg.run()
+                msg.destroy()
+        except:
+            raise
+            self.show_msg(" Nie udało się pobrać listy wynikow ")
+            return None 
+
+    def test_download_results_list(self, widget, data):
+        """ Pobranie listy wynikow, tylko dla testow uzytkownika """
+        if not self.get_current_test(data):
+            return None
+        
+        if (not self.server_conf) or self.server_conf==['']:
+            self.show_msg(" Brak ustawień serwera ")
+            return None
+
+        boundary = mimetools.choose_boundary()
+        body_list = []
+        body_list = ["--%s--"%boundary, "Content-Disposition: form-data; name=login", "", self.server_conf[1], "--%s--"%boundary, 
+                     "Content-Disposition: form-data; name=password", "", self.server_conf[2], "--%s--"%boundary,
+                     "Content-Disposition: form-data; name=test-id", "", str(self.test_id), "--%s--"%boundary]
+        body = "\r\n".join(body_list)
+        headers = {"Content-Type": "multipart/form-data; boundary=%s"%boundary, "Content-Length": str(len(body))}
+        connection = httplib.HTTPConnection(self.server_conf[0])
+        
+        try:
+            connection.request("POST","/results_list/", body, headers)
+        except:
+            print(sys.exc_info()[0].__name__)
+            #return show_alert()
+        try:
+            response = connection.getresponse()
+            re = response.read()
+#            print re
+            print re
+            self.results = objectify.fromstring(re)
+            if self.results.countchildren() > 0:
+                title = 'Wyniki testu %s' % self.test_title
+                self.test_browse_from_server(title=title, type='results')
+            else:
+                msg = gtk.MessageDialog(message_format=" Na serwerze nie ma wynikow testu %s " % self.test_title,flags=gtk.DIALOG_MODAL, type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_OK)
+                msg.set_title(" Błąd ")
+                msg.run()
+                msg.destroy()
+        except:
+            raise
+            self.show_msg(" Nie udało się pobrać listy wynikow ")
+            return None
 
     def test_delete_from_server(self, widget, data):
         if not self.get_current_test(data):
@@ -230,57 +362,64 @@ class Knut:
     def test_download(self, widget, data):
         if not self.get_current_test(data):
             return None
-
+           
         self.test = Test()
         session.commit()
-        os.mkdir("files/%s"%self.test.id)
+        os.mkdir("test_files/%s"%self.test.id)
 
         boundary = mimetools.choose_boundary()
         body_list = []
-        body_list = ["--%s--"%boundary, "Content-Disposition: form-data; name=login", "", self.server_conf[1], "--%s--"%boundary, "Content-Disposition: form-data; name=test-password", "", str(self.server_conf[2]), "--%s--"%boundary, "Content-Disposition: form-data; name=test-title", "", str(self.test_title), "--%s--"%boundary]
+        if self.public:
+            body_list = ["--%s--"%boundary,"Content-Disposition: form-data; name=test-id", "", str(self.test_id), "--%s--"%boundary]
+        else:
+            # jesli test jest prywanty, wysylam login i haslo
+            body_list = ["--%s--"%boundary, "Content-Disposition: form-data; name=login", "", self.server_conf[1], "--%s--"%boundary, "Content-Disposition: form-data; name=password", "", str(self.server_conf[2]), "--%s--"%boundary, "Content-Disposition: form-data; name=test-id", "", str(self.test_id), "--%s--"%boundary]
         body = "\r\n".join(body_list)
         headers = {"Content-Type": "multipart/form-data; boundary=%s"%boundary, "Content-Length": str(len(body))}
         connection = httplib.HTTPConnection(self.server_conf[0])
         connection.request("POST","/questions_download/", body, headers)
         response = connection.getresponse()
         if response.reason != "OK":
+            print response.reason
             f = open("error.html", "w")
             f.write(response.read())
             f.close()
             self.test.delete()
-            os.rmdir("files/%s/"%self.test.id)
+            os.rmdir("test_files/%s/"%self.test.id)
             return ""
 
-        questions_file = open("files/%s/questions.tar.bz2"%self.test.id, "w")
+        questions_file = open("test_files/%s/questions.tar.bz2"%self.test.id, "w")
         questions_file.write(response.fp.read())
         questions_file.close()
 
-        body_list = []
-        body_list = ["--%s--"%boundary, "Content-Disposition: form-data; name=login", "", self.server_conf[1], "--%s--"%boundary, "Content-Disposition: form-data; name=test-password", "", str(self.server_conf[2]), "--%s--"%boundary, "Content-Disposition: form-data; name=test-title", "", str(self.test_title), "--%s--"%boundary]
-        body = "\r\n".join(body_list)
-        headers = {"Content-Type": "multipart/form-data; boundary=%s"%boundary, "Content-Length": str(len(body))}
+#        body_list = []
+#        body_list = ["--%s--"%boundary, "Content-Disposition: form-data; name=login", "", self.server_conf[1], "--%s--"%boundary, "Content-Disposition: form-data; name=test-password", "", str(self.server_conf[2]), "--%s--"%boundary, "Content-Disposition: form-data; name=test-title", "", str(self.test_title), "--%s--"%boundary]
+#        body = "\r\n".join(body_list)
+#        headers = {"Content-Type": "multipart/form-data; boundary=%s"%boundary, "Content-Length": str(len(body))}
         connection = httplib.HTTPConnection(self.server_conf[0])
         connection.request("POST","/answers_download/", body, headers)
         response = connection.getresponse()
         if response.reason != "OK":
+            print response.reason
             f = open("error.html", "w")
             f.write(response.read())
             f.close()
             self.test.delete()
-            os.rmdir("files/%s/"%self.test.id)
+            os.rmdir("test_files/%s/"%self.test.id)
             return ""
 
-        answers_file = open("files/%s/answers.xml"%self.test.id, "w")
-        answers_file.write(response.fp.read())
+        answers_file = open("test_files/%s/answers.xml"%self.test.id, "w")
+        answers_response = response.fp.read()
+        answers_file.write(answers_response)
         answers_file.close()
 
         #zapisanie testu
-        questions_file = tarfile.open("files/%s/questions.tar.bz2"%self.test.id,"r")
-        questions_file.extractall(path="files/%s/"%self.test.id)
-        os.remove("files/%s/questions.tar.bz2"%self.test.id)
+        questions_file = tarfile.open("test_files/%s/questions.tar.bz2"%self.test.id,"r")
+        questions_file.extractall(path="test_files/%s/"%self.test.id)
+        os.remove("test_files/%s/questions.tar.bz2"%self.test.id)
 
-        test_xml = objectify.parse("files/%s/test.xml"%self.test.id).getroot()
-        answers_xml = objectify.parse("files/%s/answers.xml"%self.test.id).getroot()
+        test_xml = objectify.parse("test_files/%s/test.xml"%self.test.id).getroot()
+        answers_xml = objectify.parse("test_files/%s/answers.xml"%self.test.id).getroot()
 
         self.test.title = u(test_xml.config.title)
         self.test.author = u(test_xml.config.author)
@@ -343,7 +482,7 @@ class Knut:
         msg.set_title(" Usuwanie testu ")
         msg.label.set_text(" Usunąć wybrany test? ")
         if msg.run() == gtk.RESPONSE_OK:
-            shutil.rmtree("files/%s/"%self.test.id)
+            shutil.rmtree("test_files/%s/"%self.test.id)
             self.test.delete()
             session.commit()
             self.test = None
@@ -384,6 +523,8 @@ class Knut:
         txtvInstructionsBuffer = txtvInstructions.get_buffer()
         enTime = wTree.get_widget("enTime")
         enPassword = wTree.get_widget("enPasswd")
+        cmbCategory = wTree.get_widget("cmbCategory")
+        cmbCategory.set_active(0)
 
         if warning: #show msg with warning
             labWarning = wTree.get_widget("labWarning")
@@ -396,29 +537,34 @@ class Knut:
                 txtvInstructionsBuffer.set_text(existingConfig.instructions)
                 enTime.set_text(str(existingConfig.time))
                 enPassword.set_text(existingConfig.password)
+                cmbCategory.set_active(Knut.TEST_CATEGORIES[existingConfig.category.encode('utf8')])
             except:
                 print("ERROR: incorrect config data")
 
         if configDlg.run() == 1: #OK
-            if (not self.test) and len(enTitle.get_text())!=0 and len(enAuthor.get_text())!=0 and txtvInstructionsBuffer.get_char_count()!=0 and len(enTime.get_text())!=0 and len(enPassword.get_text())!=0: #form is filled up
+            # config correct
+            if (not self.test) and len(enTitle.get_text())!=0 and len(enAuthor.get_text())!=0 and txtvInstructionsBuffer.get_char_count()!=0 and len(enTime.get_text())!=0: #form is filled up
                 nTitle = u(enTitle.get_text())
                 nAuthor = u(enAuthor.get_text())
                 insStart, insEnd = txtvInstructionsBuffer.get_bounds()
                 nInstructions = u(txtvInstructionsBuffer.get_text(insStart,insEnd))[:256]
                 nTime = int(enTime.get_text())
                 nPassword = u(enPassword.get_text())
-                self.test = Test(title=nTitle,author=nAuthor,instructions=nInstructions,time=nTime,password=nPassword, version=1)
+                nCategory = u(cmbCategory.get_active_text())
+                self.test = Test(title=nTitle,author=nAuthor,instructions=nInstructions,time=nTime,password=nPassword,category=nCategory, version=1)
                 session.commit()
-                os.mkdir("files/%s"%self.test.id)
+                os.mkdir("test_files/%s"%self.test.id)
                 configDlg.destroy()
                 return True
-            elif len(enTitle.get_text())!=0 and len(enAuthor.get_text())!=0 and txtvInstructionsBuffer.get_char_count()!=0 and len(enTime.get_text())!=0 and len(enPassword.get_text())!=0:
+            #updating test
+            elif len(enTitle.get_text())!=0 and len(enAuthor.get_text())!=0 and txtvInstructionsBuffer.get_char_count()!=0 and len(enTime.get_text())!=0:
                 self.test.title = u(enTitle.get_text())
                 self.test.author = u(enAuthor.get_text())
                 insStart, insEnd = txtvInstructionsBuffer.get_bounds()
                 self.test.instructions = u(txtvInstructionsBuffer.get_text(insStart,insEnd))[:256]
                 self.test.time = int(enTime.get_text())
                 self.test.password = u(enPassword.get_text())
+                self.test.category = u(cmbCategory.get_active_text())
                 self.test.update()
                 session.commit()
                 configDlg.destroy()
@@ -483,6 +629,7 @@ class Knut:
         config.append(em.time(self.test.time))
         config.append(em.version(self.test.version))
         config.append(em.password(self.test.password))
+        config.append(em.category(self.test.category))
         xml_test.append(config)
 
         xml_answers = em.answers()
@@ -531,22 +678,22 @@ class Knut:
         print etree.tostring(xml_test, pretty_print=True)
         print("-"*20)
         print(etree.tostring(xml_answers, pretty_print=True))
-        xml_file_path = "files/%s/test.xml"%self.test.id
+        xml_file_path = "test_files/%s/test.xml"%self.test.id
         xml_file = open(xml_file_path,"w")
         xml_file.write(etree.tostring(xml_test, pretty_print=True, encoding="utf-8", xml_declaration=True))
         xml_file.close()
 
-        os.chdir("files/%s"%self.test.id)
+        os.chdir("test_files/%s"%self.test.id)
         tar_file_name = "questions.tar.bz2"
-        tar_file_path = "files/%s/%s"%(self.test.id, tar_file_name)
+        tar_file_path = "test_files/%s/%s"%(self.test.id, tar_file_name)
         tar_file = tarfile.open(tar_file_name ,"w:bz2")
         for file in os.listdir("."):
             tar_file.add(file)
         tar_file.close()
         os.chdir("../..")
 
-        os.remove("files/%s/test.xml"%self.test.id)
-        xml_file_answers_path = "files/%s/answers.xml"%self.test.id
+        os.remove("test_files/%s/test.xml"%self.test.id)
+        xml_file_answers_path = "test_files/%s/answers.xml"%self.test.id
         xml_file_answers = open(xml_file_answers_path, "w")
         xml_file_answers.write(etree.tostring(xml_answers, pretty_print=True, encoding="utf-8", xml_declaration=True))
         xml_file_answers.close()
@@ -565,7 +712,17 @@ class Knut:
         tar_file = open(tar_file_path, "rb")
         answers_file = open(answers_file_path, "rb")
         body_list = []
-        body_list = ["--%s--"%boundary, "content-disposition: form-data; name=tarfile; filename=%s"%tar_file_name.encode('utf8'), "content-type: application/x-gtar","", tar_file.read(), "--%s--"%boundary, "","--%s--"%boundary, "content-disposition: form-data; name=answers_xml; filename=%s"%answers_file_name.encode("utf8"), "content-type: application/xml", "", answers_file.read(), "--%s--"%boundary, "", "--%s--"%boundary, 'Content-Disposition: form-data; name="login"', "", self.server_conf[1], "--%s--"%boundary, 'Content-Disposition: from-data; name="password"', "", self.server_conf[2], "--%s--"%boundary, 'Content-Disposition: from-data; name="title"', "", self.test.title.encode('utf8'), "--%s--"%boundary, 'Content-Disposition: from-data; name="instructions"', "", self.test.instructions.encode('utf8'), "--%s--"%boundary, 'Content-Disposition: from-data; name="version"', "", str(self.test.version), '--%s--'%boundary, 'Content-Disposition: from-data; name="test-password"', "", self.test.password.encode('utf8'), '--%s--'%boundary]
+        body_list = ["--%s--"%boundary, "content-disposition: form-data; name=tarfile; filename=%s"%tar_file_name.encode('utf8'),
+                      "content-type: application/x-gtar","", tar_file.read(), "--%s--"%boundary, "","--%s--"%boundary, 
+                      "content-disposition: form-data; name=answers_xml; filename=%s"%answers_file_name.encode("utf8"), 
+                      "content-type: application/xml", "", answers_file.read(), "--%s--"%boundary, "", "--%s--"%boundary, 
+                      'Content-Disposition: form-data; name="login"', "", self.server_conf[1], "--%s--"%boundary, 
+                      'Content-Disposition: from-data; name="password"', "", self.server_conf[2], "--%s--"%boundary, 
+                      'Content-Disposition: from-data; name="title"', "", self.test.title.encode('utf8'), "--%s--"%boundary, 
+                      'Content-Disposition: from-data; name="instructions"', "", self.test.instructions.encode('utf8'), "--%s--"%boundary, 
+                      'Content-Disposition: from-data; name="version"', "", str(self.test.version), '--%s--'%boundary, 
+                      'Content-Disposition: from-data; name="test-password"', "", self.test.password.encode('utf8'), '--%s--'%boundary,
+                      'Content-Disposition: from-data; name="test-category"', "", self.test.category.encode('utf8'), '--%s--'%boundary]
         tar_file.close()
         answers_file.close()
         body = "\r\n".join(body_list)
@@ -577,6 +734,9 @@ class Knut:
         if re == "OK":
             text = " Test wysłany "
         else:
+            file = open('error.html', 'w')
+            file.write(re)
+            file.close()
             text = " Nie wysłano testu "
 
         msg = gtk.MessageDialog(message_format=text,flags=gtk.DIALOG_MODAL, type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_OK)
@@ -598,12 +758,25 @@ class Knut:
             elif self.program_mode == 3:
                 iter = self.treeView.get_selection().get_selected()[1]
                 index = self.treeView.listStore.get_path(iter)[0]
-                self.test_id = self.tests.test[data+index].id
+                self.test_id = self.tests.test[data+index].id_unq
                 self.test_password = self.tests.test[data+index].password
                 self.test_title = self.tests.test[data+index].title
             return True
         except:
-            self.show_msg(" Nie odnaleziono testu ")
+            self.show_msg(" Proszę wybrać test ")
+            return False
+
+    def get_selected_results(self, data):
+        """ zapisuje id wybrango uzytkownika w zmiennej self.result_username """
+        try:
+            iter = self.treeView.get_selection().get_selected()[1]
+            index = self.treeView.listStore.get_path(iter)[0]
+            self.result_id = self.results.result[data+index].getchildren()[0]
+            self.result_username = self.results.result[data+index].getchildren()[1]
+            
+            return True
+        except:
+            self.show_msg(" Proszę wybrać test ")
             return False
 
     def destroy_main_window(self, widget, data=None):
@@ -625,11 +798,14 @@ class Knut:
                 self.vbox_main.remove(self.answer_frame)
         if self.program_mode in (2,3):
             if self.lbl_browse:
-                self.vbox_main.remove(self.lbl_browse)
-                self.vbox_main.remove(self.treeView)
-                self.vbox_main.remove(self.hbox_browser_navigation)
-                self.vbox_main.remove(self.hbox_browser_actions)
-                self.lbl_browse, self.treeView, self.hbox_browser_navigation, self.hbox_browser_actions = None, None, None, None
+                try:
+                    self.vbox_main.remove(self.lbl_browse)
+                    self.vbox_main.remove(self.treeView)
+                    self.vbox_main.remove(self.hbox_browser_navigation)
+                    self.vbox_main.remove(self.hbox_browser_actions)
+                    self.lbl_browse, self.treeView, self.hbox_browser_navigation, self.hbox_browser_actions = None, None, None, None
+                except:
+                    pass
 
     def show_item(self, item=None):
         self.clearMainVbox()
@@ -701,7 +877,7 @@ class Knut:
             self.test.item.append(item)
 
         session.commit()
-        dir_path = "files/%s/%s"%(self.test.id, item.order)
+        dir_path = "test_files/%s/%s"%(self.test.id, item.order)
         if not os.path.isdir(dir_path):
             os.mkdir(dir_path)
 
@@ -712,11 +888,11 @@ class Knut:
             img_filename = self.prepare_img(self.question_frame.img_filename, dir_path, "q")
         item.question = Question(text=qtext, img=u(img_filename))
 
-        if type_id == 1:#txt
-            start, end = self.answer_frame.buffer.get_bounds()
-            atext = self.answer_frame.buffer.get_text(start,end)
-            item.option.append(Option(correct=True, text=unicode(atext), img=u""))
-        elif type_id in (2,3):
+#        if type_id == 1:#txt
+#            start, end = self.answer_frame.buffer.get_bounds()
+#            atext = self.answer_frame.buffer.get_text(start,end)
+#            item.option.append(Option(correct=True, text=unicode(atext), img=u""))
+        if type_id in (1,2):
             for i in range(4):
                 atext = img_filename = u""
                 if self.answer_frame.buffer[i].get_char_count() !=0:
@@ -727,7 +903,7 @@ class Knut:
                 if atext or img_filename:
                     acorrect = self.answer_frame.correct_btn[i].get_active()
                     item.option.append(Option(correct=acorrect, text=unicode(atext), img=unicode(img_filename)))
-        elif type_id == 4:
+        elif type_id == 3:
             if self.answer_frame.answer_combo.get_active() == 0:
                 acorrect = True
             else:
@@ -747,13 +923,13 @@ class Knut:
             return img_filename
 
     def get_item_type(self, id):
+#        if id == 1:
+#            return "txt"
         if id == 1:
-            return "txt"
-        elif id == 2:
             return "one"
-        elif id == 3:
+        elif id == 2:
             return "mul"
-        elif id == 4:
+        elif id == 3:
             return "t/f"
 
     def checkdb(self):
@@ -770,10 +946,10 @@ class Knut:
             self.validation_error = "Brak pytania\n"
         elif (self.answer_frame.answer_type_combo.get_active() == 0):
             self.validation_error += "Nie wybrano rodzaju odpowiedzi\n"
-        #jesli wybrano txt to nie sprawdzam, pytanie otwarte
-        elif (self.answer_frame.answer_type_combo.get_active() == 1) and (self.answer_frame.buffer.get_char_count() == 0):
-            self.validation_error += "Brak odpowiedzi"
-        elif (self.answer_frame.answer_type_combo.get_active() in (2,3)) and not (self.answer_frame.buffer[0].get_char_count() or self.answer_frame.image.get(0) or
+#        #jesli wybrano txt to nie sprawdzam, pytanie otwarte
+#        elif (self.answer_frame.answer_type_combo.get_active() == 1) and (self.answer_frame.buffer.get_char_count() == 0):
+#            self.validation_error += "Brak odpowiedzi"
+        elif (self.answer_frame.answer_type_combo.get_active() in (1,2)) and not (self.answer_frame.buffer[0].get_char_count() or self.answer_frame.image.get(0) or
                                                                                   self.answer_frame.buffer[1].get_char_count() or self.answer_frame.image.get(1) or
                                                                                   self.answer_frame.buffer[2].get_char_count() or self.answer_frame.image.get(2) or
                                                                                   self.answer_frame.buffer[3].get_char_count() or self.answer_frame.image.get(3)):

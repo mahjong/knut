@@ -12,45 +12,45 @@ class AnswerFrame(gtk.Frame):
         self.set_label(" Odpowiedź ")
         self.answer_type_combo = gtk.combo_box_new_text()
         self.answer_type_combo.insert_text(0, " Wybierz typ odpowiedzi ")
-        self.answer_type_combo.insert_text(1, " Tekstowa ")
-        self.answer_type_combo.insert_text(2, " Jednokrotnego wyboru ")
-        self.answer_type_combo.insert_text(3, " Wielokrotnego wyboru ")
-        self.answer_type_combo.insert_text(4, " Prawda/Fałsz ")
+#        self.answer_type_combo.insert_text(1, " Tekstowa ")
+        self.answer_type_combo.insert_text(1, " Jednokrotnego wyboru ")
+        self.answer_type_combo.insert_text(2, " Wielokrotnego wyboru ")
+        self.answer_type_combo.insert_text(3, " Prawda/Fałsz ")
         self.answer_type_combo.connect("changed", self.answer_type_combo_changed)
         self.answer_vbox = gtk.VBox()
         self.answer_vbox.pack_start(self.answer_type_combo, False, False, 0)
         if item and item.type:
             self.item = item
-            self.dir_path = "files/%s/%s"%(self.item.test_id, self.item.order)
+            self.dir_path = "test_files/%s/%s"%(self.item.test_id, self.item.order)
             self.answer_type_combo.set_active(self.get_type_index(item.type))
         else:
             self.answer_type_combo.set_active(0)
         self.add(self.answer_vbox)
 
     def get_type_index(self, type):
-        if type == "txt":
+#        if type == "txt":
+#            return 1
+        if type == "one":
             return 1
-        elif type == "one":
-            return 2
         elif type == "mul":
-            return 3
+            return 2
         elif type == "t/f":
-            return 4
+            return 3
 
     def answer_type_combo_changed(self, widget=None, data=None):
         if len(self.answer_vbox.get_children()) > 1:#usuwanie poprzednich
            self.answer_vbox.remove(self.answer_vbox.get_children()[1])
 
 
-        if self.answer_type_combo.get_active() == 1:# Tekstowa
-            self.text_view = gtk.TextView()
-            self.text_view.set_size_request(100,100)
-            self.text_view.set_wrap_mode(gtk.WRAP_WORD)
-            self.buffer = self.text_view.get_buffer()
-            if self.item and self.item.option:
-                self.buffer.set_text(self.item.option[0].text)
-            self.answer_vbox.pack_start(self.text_view, False, False, 5)
-        elif self.answer_type_combo.get_active() in (2,3):
+#        if self.answer_type_combo.get_active() == 1:# Tekstowa
+#            self.text_view = gtk.TextView()
+#            self.text_view.set_size_request(100,100)
+#            self.text_view.set_wrap_mode(gtk.WRAP_WORD)
+#            self.buffer = self.text_view.get_buffer()
+#            if self.item and self.item.option:
+#                self.buffer.set_text(self.item.option[0].text)
+#            self.answer_vbox.pack_start(self.text_view, False, False, 5)
+        if self.answer_type_combo.get_active() in (1,2):
             self.text_view  = {}
             self.buffer = {}
             self.option_vbox = {}
@@ -72,12 +72,12 @@ class AnswerFrame(gtk.Frame):
                     self.text_view[index].set_size_request(250,100)
                     self.text_view[index].set_wrap_mode(gtk.WRAP_WORD)
                     self.buffer[index] = self.text_view[index].get_buffer()
-                    if self.answer_type_combo.get_active() == 2:# jednokrotnego wyboru
+                    if self.answer_type_combo.get_active() == 1:# jednokrotnego wyboru
                         if index == 0:
                             self.correct_btn[0] = gtk.RadioButton()
                         else:
                             self.correct_btn[index] = gtk.RadioButton(self.correct_btn[0])
-                    elif self.answer_type_combo.get_active() == 3:# wielokrotnego wyboru
+                    elif self.answer_type_combo.get_active() == 2:# wielokrotnego wyboru
                         self.correct_btn[index] = gtk.CheckButton()
 
 
@@ -105,8 +105,8 @@ class AnswerFrame(gtk.Frame):
 
                     index += 1
 
-            self.answer_vbox.pack_start(self.table, False, False, 10)
-        elif self.answer_type_combo.get_active() == 4:
+            self.answer_vbox.pack_start(self.table, False, False)
+        elif self.answer_type_combo.get_active() == 3:
             self.answer_combo = gtk.combo_box_new_text()
             self.answer_combo.insert_text(0, " Prawda ")
             self.answer_combo.insert_text(1, " Fałsz ")

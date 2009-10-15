@@ -13,10 +13,12 @@ class Print(gtk.PrintOperation):
         gtk.PrintOperation.__init__(self)
         self.parent = parent
         self.test = test
+        self.items_num = len(test.item)
        
         self.connect("begin-print", self.__begin_print)
         self.connect("draw-page", self.__draw_page)
        
+        print test.item
         res = self.run(gtk.PRINT_OPERATION_ACTION_PRINT_DIALOG, parent)
 #        res = self.run(gtk.PRINT_OPERATION_ACTION_PREVIEW, parent)
 
@@ -30,7 +32,7 @@ class Print(gtk.PrintOperation):
             error_dialog.show()
 
     def __begin_print(self, operation, context):
-        operation.set_n_pages(len(self.test.item)/2+1)
+        operation.set_n_pages(self.items_num/2+1+self.items_num%2)
         #layout = context.create_pango_layout()
         #desc = pango.FontDescription("monospace 10")
         #layout.set_font_description(desc)
@@ -99,10 +101,12 @@ class Print(gtk.PrintOperation):
         else:
             layout = context.create_pango_layout()
             q_number = page_nr*2 -1
+            print q_number
             self.draw_item(self.test.item[q_number-1], q_number, layout, context, cr, 50)
             
             q_number = page_nr*2
-            self.draw_item(self.test.item[q_number-1], q_number, layout, context, cr, 450)
+            if self.items_num > q_number:
+                self.draw_item(self.test.item[q_number-1], q_number, layout, context, cr, 450)
             
     def draw_item(self, item, q_number, layout, context, cr, begin_y):
         q_text = '%s. %s' % ( q_number, item.question.text)
@@ -116,22 +120,57 @@ class Print(gtk.PrintOperation):
         cr.move_to(0, begin_y)
         
         if item.type in ('one', 'mul'):
-            layout.set_text(q_text + ' (Wybierz jedną odpowiedź)')
+            if item.question.img:
+                img_filename = 'test_files/%s/%s/%s' % (self.test.id, item.order, item.question.img)
+                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(img_filename, 200, 100)
+                cr.set_source_pixbuf(pixbuf, 200 ,begin_y+50)
+                cr.paint()
+                begin_y += 150
+            if item.type == 'one':
+                layout.set_text(q_text + ' (Wybierz jedną odpowiedź)')
+            else:
+                layout.set_text(q_text + ' (Wybierz odpowiedzi)')
             cr.show_layout(layout)
             layout.set_width(width/2)
             layout.set_wrap(pango.WRAP_WORD_CHAR)
             layout.set_text('A) ' + item.option[0].text)
-            cr.move_to(0, 100)
+            cr.move_to(0, begin_y+50)
             cr.show_layout(layout)
+            if item.option[0].img:
+                img_filename = 'test_files/%s/%s/%s' % (self.test.id, item.order, item.option[0].img)
+                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(img_filename, 200, 100)
+                cr.set_source_pixbuf(pixbuf, 20 ,begin_y+50)
+                cr.paint()
             layout.set_text('B) ' + item.option[1].text)
-            cr.move_to(0, 200)
+            cr.move_to(0, begin_y+150)
             cr.show_layout(layout)
+            if item.option[1].img:
+                img_filename = 'test_files/%s/%s/%s' % (self.test.id, item.order, item.option[1].img)
+                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(img_filename, 200, 100)
+                cr.set_source_pixbuf(pixbuf, 20 ,begin_y+150)
+                cr.paint()
             layout.set_text('C) ' + item.option[2].text)
-            cr.move_to(300, 100)
+            cr.move_to(300, begin_y+50)
             cr.show_layout(layout)
+            if item.option[2].img:
+                img_filename = 'test_files/%s/%s/%s' % (self.test.id, item.order, item.option[2].img)
+                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(img_filename, 200, 100)
+                cr.set_source_pixbuf(pixbuf, 320 ,begin_y+50)
+                cr.paint()
             layout.set_text('D) ' + item.option[3].text)
-            cr.move_to(300, 200)
+            cr.move_to(300, begin_y+150)
             cr.show_layout(layout)
+            if item.option[3].img:
+                img_filename = 'test_files/%s/%s/%s' % (self.test.id, item.order, item.option[3].img)
+                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(img_filename, 200, 100)
+                cr.set_source_pixbuf(pixbuf, 320 ,begin_y+150)
+                cr.paint()
+#            if item.option[0].img:
+#                img_filename = 'test_files/%s/%s/%s' % (self.test.id, item.order, item.option[0].img)
+#                print img_filename
+#                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(img_filename, 200, 100)
+#                cr.set_source_pixbuf(pixbuf, 0 ,0)
+#                cr.paint()
 #            cr.move_to(50, 50)
 #            cr.arc(50, 50, 5, 0, 2 * Print.M_PI)
 #            cr.stroke()
@@ -139,10 +178,10 @@ class Print(gtk.PrintOperation):
             layout.set_text(q_text)
             cr.show_layout(layout)
             layout.set_text('Prawda')
-            cr.move_to(100, 550)
+            cr.move_to(100, begin_y+100)
             cr.show_layout(layout)
             layout.set_text('Fałsz')
-            cr.move_to(300, 550)
+            cr.move_to(300, begin_y+100)
             cr.show_layout(layout)
         elif item.type == 'txt':
             layout.set_text(q_text + ' (Odpowiedź pisemna)')
@@ -157,4 +196,4 @@ if __name__ == '__main__':
     # requires test in db
     from dbmodel import *
     setup_all()
-    p = Print(Test.query.all()[0])
+    p = Print(Test.query.all()[1])

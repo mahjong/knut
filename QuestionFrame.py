@@ -20,7 +20,7 @@ class QuestionFrame(gtk.Frame):
         self.question_vbox = gtk.VBox()
         if self.item and self.item.question.img:
             self.img_filename = self.item.question.img
-            dir_path = "files/%s/%s"%(self.item.test_id, self.item.order)
+            dir_path = "test_files/%s/%s"%(self.item.test_id, self.item.order)
             self.pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(os.path.join(dir_path,self.img_filename), 200, 100)
             self.image = gtk.image_new_from_pixbuf(self.pixbuf)
             self.img_button = gtk.Button(" Zmień obrazek ")
@@ -74,7 +74,7 @@ class QuestionFrame(gtk.Frame):
             self.question_vbox.remove(self.image)
             self.img_button_hbox.remove(self.remove_btn)
             if os.path.dirname(self.img_filename) == "":
-                os.remove("files/%s/%s/%s"%(self.item.test_id, self.item.order, self.img_filename))
+                os.remove("test_files/%s/%s/%s"%(self.item.test_id, self.item.order, self.img_filename))
 
 
         self.img_filename = img_filename
@@ -92,10 +92,11 @@ class QuestionFrame(gtk.Frame):
         self.question_vbox.remove(self.image)
         self.img_button.set_label(" Dodaj obrazek ")
         if os.path.dirname(self.img_filename) == "":
-            os.remove("files/%s/%s/%s"%(self.item.test_id, self.item.order, self.img_filename))
+            os.remove("test_files/%s/%s/%s"%(self.item.test_id, self.item.order, self.img_filename))
         self.img_filename = None
 
-import Knut
+
 if __name__ == "__main__":
+    import Knut
     k = Knut.Knut()
     gtk.main()
