@@ -47,7 +47,8 @@ class Knut:
                "on_test_list_download_activate":self.test_list_download,
                "on_test_list_download_public_activate":self.test_list_download,
                "on_test_quit_activate":self.destroy_main_window,
-               "on_server_settings_activate":self.show_server_config_window}
+               "on_server_settings_activate":self.show_server_config_window,
+               "on_help_about_activate": self.show_about_window,}
 
         wTree.signal_autoconnect(dict)
 
@@ -583,6 +584,15 @@ class Knut:
             self.server_conf = settings_file.read().split(';')
         else:
             self.server_conf = None
+
+    def show_about_window(self, warning=None):
+
+        wTree = gtk.glade.XML("Knut.glade", "about")
+        about_window = wTree.get_widget("about")
+        about_window.run()
+        about_window.destroy()
+        
+#        btn_close = wTree.get_widget("close_about")
 
     def show_server_config_window(self, warning=None):
 
