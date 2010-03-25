@@ -5,4 +5,6 @@
 *.jpeg
 *.html
 *.sqlite
-
+.project
+.pydevproject
+knut.kpf
