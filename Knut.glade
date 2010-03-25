@@ -1,12 +1,12 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Thu Oct 15 10:36:54 2009 -->
+<?xml version="1.0"?>
 <glade-interface>
+  <!-- interface-requires gtk+ 2.6 -->
+  <!-- interface-naming-policy toplevel-contextual -->
   <widget class="GtkWindow" id="mainWindow">
     <property name="width_request">600</property>
     <property name="height_request">800</property>
     <property name="visible">True</property>
-    <property name="window_position">GTK_WIN_POS_CENTER</property>
+    <property name="window_position">center</property>
     <signal name="destroy" handler="on_mainWindow_destroy"/>
     <child>
       <widget class="GtkVBox" id="vbox_main">
@@ -24,8 +24,8 @@
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkImageMenuItem" id="test_new">
+                        <property name="label">gtk-new</property>
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">gtk-new</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_test_new_activate"/>
@@ -38,44 +38,32 @@
                     </child>
                     <child>
                       <widget class="GtkImageMenuItem" id="test_browse">
+                        <property name="label">_Przegl&#x105;daj lokalnie</property>
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Przeglądaj lokalnie</property>
                         <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
                         <signal name="activate" handler="on_test_browse_activate"/>
-                        <accelerator key="F2" modifiers="" signal="activate"/>
-                        <child internal-child="image">
-                          <widget class="GtkImage" id="menu-item-image1">
-                            <property name="stock">gtk-open</property>
-                          </widget>
-                        </child>
+                        <accelerator key="F2" signal="activate"/>
                       </widget>
                     </child>
                     <child>
                       <widget class="GtkImageMenuItem" id="test_list_download">
+                        <property name="label">Przegl&#x105;daj na _serwerze</property>
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Przeglądaj na _serwerze</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_test_list_download_activate" after="yes" object="1"/>
-                        <accelerator key="F3" modifiers="" signal="activate"/>
-                        <child internal-child="image">
-                          <widget class="GtkImage" id="menu-item-image2">
-                            <property name="stock">gtk-network</property>
-                          </widget>
-                        </child>
+                        <property name="use_stock">True</property>
+                        <signal name="activate" handler="on_test_list_download_activate" object="1" after="yes"/>
+                        <accelerator key="F3" signal="activate"/>
                       </widget>
                     </child>
                     <child>
                       <widget class="GtkImageMenuItem" id="test_list_download_public">
+                        <property name="label">Przegl&#x105;daj testy _publiczne</property>
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Przeglądaj testy _publiczne</property>
                         <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
                         <signal name="activate" handler="on_test_list_download_public_activate"/>
-                        <accelerator key="F4" modifiers="" signal="activate"/>
-                        <child internal-child="image">
-                          <widget class="GtkImage" id="menu-item-image4">
-                            <property name="stock">gtk-network</property>
-                          </widget>
-                        </child>
+                        <accelerator key="F4" signal="activate"/>
                       </widget>
                     </child>
                     <child>
@@ -85,8 +73,8 @@
                     </child>
                     <child>
                       <widget class="GtkImageMenuItem" id="test_quit">
+                        <property name="label">gtk-quit</property>
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">gtk-quit</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_test_quit_activate"/>
@@ -106,12 +94,12 @@
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkImageMenuItem" id="server_settings">
+                        <property name="label">gtk-preferences</property>
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">gtk-preferences</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_server_settings_activate"/>
-                        <accelerator key="F5" modifiers="" signal="activate"/>
+                        <accelerator key="F5" signal="activate"/>
                       </widget>
                     </child>
                   </widget>
@@ -128,12 +116,12 @@
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkImageMenuItem" id="help_about">
+                        <property name="label">gtk-about</property>
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">gtk-about</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_help_about_activate"/>
-                        <accelerator key="F1" modifiers="" signal="activate"/>
+                        <accelerator key="F1" signal="activate"/>
                       </widget>
                     </child>
                   </widget>
@@ -143,6 +131,7 @@
           </widget>
           <packing>
             <property name="expand">False</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
@@ -153,8 +142,8 @@
   </widget>
   <widget class="GtkDialog" id="testConfigDlg">
     <property name="border_width">5</property>
-    <property name="window_position">GTK_WIN_POS_CENTER_ON_PARENT</property>
-    <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="type_hint">dialog</property>
     <property name="has_separator">False</property>
     <child internal-child="vbox">
       <widget class="GtkVBox" id="dialog-vbox">
@@ -194,7 +183,7 @@
             <child>
               <widget class="GtkLabel" id="labPasswd">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">Hasło: </property>
+                <property name="label" translatable="yes">Has&#x142;o: </property>
               </widget>
               <packing>
                 <property name="top_attach">5</property>
@@ -231,7 +220,7 @@
             <child>
               <widget class="GtkLabel" id="labTitle">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">Tytuł:</property>
+                <property name="label" translatable="yes">Tytu&#x142;:</property>
               </widget>
               <packing>
                 <property name="y_options"></property>
@@ -294,7 +283,7 @@
                 <property name="height_request">60</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="wrap_mode">GTK_WRAP_WORD</property>
+                <property name="wrap_mode">word</property>
                 <property name="accepts_tab">False</property>
               </widget>
               <packing>
@@ -320,7 +309,7 @@
             <child>
               <widget class="GtkComboBox" id="cmbCategory">
                 <property name="visible">True</property>
-                <property name="items" translatable="yes">Różności
+                <property name="items" translatable="yes">R&#xF3;&#x17C;no&#x15B;ci
 Matematyka
 Informatyka
 Geografia
@@ -336,7 +325,7 @@ Historia</property>
             <child>
               <widget class="GtkLabel" id="label1">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">&lt;span foreground="blue"&gt;Hasło jest wymagane aby test był prywatny&lt;/span&gt;</property>
+                <property name="label" translatable="yes">&lt;span foreground="blue"&gt;Has&#x142;o jest wymagane aby test by&#x142; prywatny&lt;/span&gt;</property>
                 <property name="use_markup">True</property>
               </widget>
               <packing>
@@ -365,34 +354,41 @@ Historia</property>
         <child internal-child="action_area">
           <widget class="GtkHButtonBox" id="dialog-action_area">
             <property name="visible">True</property>
-            <property name="layout_style">GTK_BUTTONBOX_END</property>
+            <property name="layout_style">end</property>
             <child>
               <widget class="GtkButton" id="button1">
+                <property name="label">gtk-cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="label" translatable="yes">gtk-cancel</property>
                 <property name="use_stock">True</property>
-                <property name="response_id">0</property>
               </widget>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">0</property>
+              </packing>
             </child>
             <child>
               <widget class="GtkButton" id="button2">
+                <property name="label">gtk-ok</property>
+                <property name="response_id">1</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="label" translatable="yes">gtk-ok</property>
                 <property name="use_stock">True</property>
-                <property name="response_id">1</property>
               </widget>
               <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
                 <property name="position">1</property>
               </packing>
             </child>
           </widget>
           <packing>
             <property name="expand">False</property>
-            <property name="pack_type">GTK_PACK_END</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
           </packing>
         </child>
       </widget>
@@ -401,8 +397,8 @@ Historia</property>
   <widget class="GtkDialog" id="serverConfigDlg">
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Dane serwera</property>
-    <property name="window_position">GTK_WIN_POS_CENTER_ON_PARENT</property>
-    <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="type_hint">dialog</property>
     <property name="has_separator">False</property>
     <child internal-child="vbox">
       <widget class="GtkVBox" id="dialog-vbox2">
@@ -432,7 +428,7 @@ Historia</property>
             <child>
               <widget class="GtkLabel" id="labPassword">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">hasło:</property>
+                <property name="label" translatable="yes">has&#x142;o:</property>
               </widget>
               <packing>
                 <property name="top_attach">2</property>
@@ -492,34 +488,41 @@ Historia</property>
         <child internal-child="action_area">
           <widget class="GtkHButtonBox" id="dialog-action_area2">
             <property name="visible">True</property>
-            <property name="layout_style">GTK_BUTTONBOX_END</property>
+            <property name="layout_style">end</property>
             <child>
               <widget class="GtkButton" id="button3">
+                <property name="label">gtk-cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="label" translatable="yes">gtk-cancel</property>
                 <property name="use_stock">True</property>
-                <property name="response_id">0</property>
               </widget>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">0</property>
+              </packing>
             </child>
             <child>
               <widget class="GtkButton" id="button4">
+                <property name="label">gtk-ok</property>
+                <property name="response_id">1</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="label" translatable="yes">gtk-ok</property>
                 <property name="use_stock">True</property>
-                <property name="response_id">1</property>
               </widget>
               <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
                 <property name="position">1</property>
               </packing>
             </child>
           </widget>
           <packing>
             <property name="expand">False</property>
-            <property name="pack_type">GTK_PACK_END</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
           </packing>
         </child>
       </widget>
@@ -527,8 +530,8 @@ Historia</property>
   </widget>
   <widget class="GtkDialog" id="about">
     <property name="border_width">5</property>
-    <property name="window_position">GTK_WIN_POS_CENTER_ON_PARENT</property>
-    <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="type_hint">dialog</property>
     <property name="has_separator">False</property>
     <child internal-child="vbox">
       <widget class="GtkVBox" id="dialog-vbox3">
@@ -537,9 +540,9 @@ Historia</property>
         <child>
           <widget class="GtkLabel" id="label2">
             <property name="visible">True</property>
-            <property name="label" translatable="yes">Knut test jest edytorem testów.
+            <property name="label" translatable="yes">Knut test jest edytorem test&#xF3;w.
 Licencja: GPL v.3
-2008-2009 Wiktor Idzikowski</property>
+2008-2010 Wiktor Idzikowski</property>
           </widget>
           <packing>
             <property name="position">1</property>
@@ -548,24 +551,26 @@ Licencja: GPL v.3
         <child internal-child="action_area">
           <widget class="GtkHButtonBox" id="dialog-action_area3">
             <property name="visible">True</property>
-            <property name="layout_style">GTK_BUTTONBOX_END</property>
+            <property name="layout_style">end</property>
             <child>
               <widget class="GtkButton" id="close_about1">
+                <property name="label">gtk-close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="label" translatable="yes">gtk-close</property>
                 <property name="use_stock">True</property>
-                <property name="response_id">0</property>
               </widget>
               <packing>
+                <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="position">0</property>
               </packing>
             </child>
           </widget>
           <packing>
             <property name="expand">False</property>
-            <property name="pack_type">GTK_PACK_END</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
           </packing>
         </child>
       </widget>
