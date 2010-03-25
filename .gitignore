@@ -8,3 +8,5 @@
 .project
 .pydevproject
 knut.kpf
+.settings/
+settings.txt
