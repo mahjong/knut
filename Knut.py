@@ -30,7 +30,7 @@ class Knut:
                        'Geografia': 3,
                        'Historia': 4,}
     
-    """ Knut - Knowledge Assesment """
+    """ Knut - Knowledge Assesment App"""
     def __init__(self):
 
         self.test = None
@@ -166,7 +166,7 @@ class Knut:
                 msg.run()
                 msg.destroy()
         except:
-            raise
+            self.save_error(re)
             self.show_msg(" Nie udało się pobrać listy testów ")
             return None
 
@@ -966,6 +966,11 @@ class Knut:
             self.validation_error += "Brak odpowiedzi"
 
         #print self.validation_error
+
+    def save_error(self, text):
+        f = open('error.html', 'w')
+        f.write(text)
+        f.close()
 
 if __name__ == "__main__":
     k = Knut()
