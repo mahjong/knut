@@ -1,0 +1,120 @@
+\begin{theindex}
+\def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
+
+  \bigletter A
+  \item add\_img() (AnswerFrame.AnswerFrame metoda), \hyperpage{11}
+  \item add\_img() (QuestionFrame.QuestionFrame metoda), \hyperpage{9}
+  \item add\_or\_update\_item() (Knut.Knut metoda), \hyperpage{3}
+  \item answer\_type\_combo\_changed() (AnswerFrame.AnswerFrame metoda), \hyperpage{11}
+  \item AnswerFrame (modu\IeC {\l }), \hyperpage{11}
+  \item AnswerFrame (w klasie AnswerFrame), \hyperpage{11}
+  \item answers\_download() (Knut.Knut metoda), \hyperpage{3}
+  \item author (dbmodel.Test atrybut), \hyperpage{13}
+
+  \indexspace
+  \bigletter C
+  \item category (dbmodel.Test atrybut), \hyperpage{13}
+  \item checkdb() (Knut.Knut metoda), \hyperpage{3}
+  \item clearMainVbox() (Knut.Knut metoda), \hyperpage{3}
+  \item correct (dbmodel.Option atrybut), \hyperpage{14}
+
+  \indexspace
+  \bigletter D
+  \item dbmodel (modu\IeC {\l }), \hyperpage{13}
+  \item destroy\_main\_window() (Knut.Knut metoda), \hyperpage{3}
+
+  \indexspace
+  \bigletter G
+  \item get\_current\_test() (Knut.Knut metoda), \hyperpage{4}
+  \item get\_item\_type() (Knut.Knut metoda), \hyperpage{4}
+  \item get\_selected\_results() (Knut.Knut metoda), \hyperpage{4}
+  \item get\_type\_index() (AnswerFrame.AnswerFrame metoda), \hyperpage{11}
+
+  \indexspace
+  \bigletter I
+  \item img (dbmodel.Option atrybut), \hyperpage{14}
+  \item img (dbmodel.Question atrybut), \hyperpage{14}
+  \item img\_button\_clicked() (AnswerFrame.AnswerFrame metoda), \hyperpage{11}
+  \item img\_button\_clicked() (QuestionFrame.QuestionFrame metoda), \hyperpage{9}
+  \item instructions (dbmodel.Test atrybut), \hyperpage{13}
+  \item item (dbmodel.Option atrybut), \hyperpage{14}
+  \item item (dbmodel.Question atrybut), \hyperpage{14}
+  \item item (dbmodel.Test atrybut), \hyperpage{13}
+  \item Item (w klasie dbmodel), \hyperpage{13}
+
+  \indexspace
+  \bigletter K
+  \item Knut (modu\IeC {\l }), \hyperpage{3}
+  \item Knut (w klasie Knut), \hyperpage{3}
+
+  \indexspace
+  \bigletter L
+  \item load\_server\_conf() (Knut.Knut metoda), \hyperpage{4}
+
+  \indexspace
+  \bigletter N
+  \item next\_btn\_clicked() (Knut.Knut metoda), \hyperpage{4}
+
+  \indexspace
+  \bigletter O
+  \item option (dbmodel.Item atrybut), \hyperpage{13}
+  \item Option (w klasie dbmodel), \hyperpage{14}
+  \item order (dbmodel.Item atrybut), \hyperpage{13}
+
+  \indexspace
+  \bigletter P
+  \item password (dbmodel.Test atrybut), \hyperpage{13}
+  \item post\_files() (Knut.Knut metoda), \hyperpage{4}
+  \item prepare\_img() (Knut.Knut metoda), \hyperpage{4}
+  \item prev\_btn\_clicked() (Knut.Knut metoda), \hyperpage{5}
+
+  \indexspace
+  \bigletter Q
+  \item question (dbmodel.Item atrybut), \hyperpage{14}
+  \item Question (w klasie dbmodel), \hyperpage{14}
+  \item QuestionFrame (modu\IeC {\l }), \hyperpage{9}
+  \item QuestionFrame (w klasie QuestionFrame), \hyperpage{9}
+
+  \indexspace
+  \bigletter R
+  \item read\_config() (Knut.Knut metoda), \hyperpage{5}
+  \item remove\_img() (AnswerFrame.AnswerFrame metoda), \hyperpage{12}
+  \item remove\_img() (QuestionFrame.QuestionFrame metoda), \hyperpage{9}
+
+  \indexspace
+  \bigletter S
+  \item save\_error() (Knut.Knut metoda), \hyperpage{5}
+  \item show\_about\_window() (Knut.Knut metoda), \hyperpage{5}
+  \item show\_item() (Knut.Knut metoda), \hyperpage{5}
+  \item show\_msg() (Knut.Knut metoda), \hyperpage{5}
+  \item show\_server\_config\_window() (Knut.Knut metoda), \hyperpage{5}
+
+  \indexspace
+  \bigletter T
+  \item test (dbmodel.Item atrybut), \hyperpage{14}
+  \item Test (w klasie dbmodel), \hyperpage{13}
+  \item test\_browse() (Knut.Knut metoda), \hyperpage{5}
+  \item test\_browse\_from\_server() (Knut.Knut metoda), \hyperpage{5}
+  \item TEST\_CATEGORIES (Knut.Knut atrybut), \hyperpage{3}
+  \item test\_delete() (Knut.Knut metoda), \hyperpage{6}
+  \item test\_delete\_from\_server() (Knut.Knut metoda), \hyperpage{6}
+  \item test\_download() (Knut.Knut metoda), \hyperpage{6}
+  \item test\_download\_results\_list() (Knut.Knut metoda), \hyperpage{6}
+  \item test\_edit\_settings() (Knut.Knut metoda), \hyperpage{6}
+  \item test\_list\_download() (Knut.Knut metoda), \hyperpage{6}
+  \item test\_new() (Knut.Knut metoda), \hyperpage{7}
+  \item test\_open() (Knut.Knut metoda), \hyperpage{7}
+  \item test\_print() (Knut.Knut metoda), \hyperpage{7}
+  \item test\_upload() (Knut.Knut metoda), \hyperpage{7}
+  \item text (dbmodel.Option atrybut), \hyperpage{14}
+  \item text (dbmodel.Question atrybut), \hyperpage{14}
+  \item time (dbmodel.Test atrybut), \hyperpage{13}
+  \item title (dbmodel.Test atrybut), \hyperpage{13}
+  \item type (dbmodel.Item atrybut), \hyperpage{14}
+
+  \indexspace
+  \bigletter V
+  \item validate\_input() (Knut.Knut metoda), \hyperpage{7}
+  \item version (dbmodel.Test atrybut), \hyperpage{13}
+
+\end{theindex}

@@ -4,9 +4,17 @@
 import gtk, pygtk, os
 
 class AnswerFrame(gtk.Frame):
-    """ Klasa zawierająca elementy odpowiedzi """
+    """ Klasa ramki w której znajdują się możliwe odpowiedzi """
 
     def __init__(self, item=None):
+        """
+        __init__(item=None)
+        
+        Inicjalizuje ramke odpowiedzi, uzupełnia pola danymi ze zmiennej item
+    
+        Argumenty
+            * item - opcjonalnie, obiekt bierzącego pytania, jeśli brak to wyświetla puste pola do edycji
+        """
         gtk.Frame.__init__(self)
         self.item = None
         self.set_label(" Odpowiedź ")
@@ -28,6 +36,17 @@ class AnswerFrame(gtk.Frame):
         self.add(self.answer_vbox)
 
     def get_type_index(self, type):
+        """
+        Zamienia tekst typu odpowiedzi na reprezentację liczbową
+        
+        Argumenty
+            * type - zmienna tekstowa:
+        
+        Wartości zwracane
+            * 'one' -> 1 - pytanie jednokrotnego wyboru
+            * 'mul' -> 2 - pytanie wielokrotnego wyboru
+            * 't/f' -> 3 - pytanie typu prawda/fałsz
+        """
 #        if type == "txt":
 #            return 1
         if type == "one":
@@ -38,6 +57,13 @@ class AnswerFrame(gtk.Frame):
             return 3
 
     def answer_type_combo_changed(self, widget=None, data=None):
+        """
+        Wyświetla pola do edycji dla danego typu odpowiedzi
+        
+        Argumenty
+            * widget - opcjonalnie, widżet, który wywołał metodę
+            * data - opcjonalnie, dodatkowe dane zdefiniowane przy łączeniu
+        """
         if len(self.answer_vbox.get_children()) > 1:#usuwanie poprzednich
            self.answer_vbox.remove(self.answer_vbox.get_children()[1])
 
@@ -122,7 +148,13 @@ class AnswerFrame(gtk.Frame):
         self.show_all()
 
     def img_button_clicked(self, widget=None, data=None):
-        print("dodaje obrazek")
+        """
+        Otwiera okno wyboru obrazka do danej odpowiedzi
+        
+        Argumenty
+            * widget - opcjonalnie, widżet, który wywołał metodę
+            * data - opcjonalnie, dodatkowe dane zdefiniowane przy łączeniu
+        """
 
         dialog = gtk.FileChooserDialog(" Dodaj obrazek... ",
                                  None,
@@ -152,6 +184,13 @@ class AnswerFrame(gtk.Frame):
         dialog.destroy()
 
     def add_img(self, img_filename, index):
+        """
+        Dodaje lub zamienia obrazek przy danej odpowiedzi
+        
+        Argumenty
+            * img_filename - ścieżka do pliku obrazka
+            * index - indeks odpowiedzi, w której zmienia się obrazek
+        """
         if len(self.option_vbox[index].get_children()) > 2:
             self.option_vbox[index].remove(self.image[index])
             self.img_button_hbox[index].remove(self.remove_btn[index])
@@ -168,6 +207,13 @@ class AnswerFrame(gtk.Frame):
         self.show_all()
 
     def remove_img(self, widget, index):
+        """
+        Usuwa wybrany obrazek
+        
+        Argumenty
+            * widget - widżet, który wywołał metodę
+            * index - indeks odpowiedzi, w której usuwa obrazek
+        """
         self.img_button_hbox[index].remove(self.remove_btn[index])
         self.option_vbox[index].remove(self.image[index])
         self.img_button[index].set_label(" Dodaj obrazek ")
@@ -175,7 +221,7 @@ class AnswerFrame(gtk.Frame):
             os.remove(os.path.join(self.dir_path, self.img_filename[index]))
         self.img_filename[index] = None
 
-import Knut
 if __name__ == "__main__":
+    import Knut
     k = Knut.Knut()
     gtk.main()

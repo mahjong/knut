@@ -38,17 +38,22 @@
                     </child>
                     <child>
                       <widget class="GtkImageMenuItem" id="test_browse">
-                        <property name="label">_Przegl&#x105;daj lokalnie</property>
+                        <property name="label">Przegl&#x105;daj Lokalnie</property>
                         <property name="visible">True</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
+                        <property name="use_stock">False</property>
                         <signal name="activate" handler="on_test_browse_activate"/>
                         <accelerator key="F2" signal="activate"/>
+                        <child internal-child="image">
+                          <widget class="GtkImage" id="image1">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-save</property>
+                          </widget>
+                        </child>
                       </widget>
                     </child>
                     <child>
                       <widget class="GtkImageMenuItem" id="test_list_download">
-                        <property name="label">Przegl&#x105;daj na _serwerze</property>
+                        <property name="label">gtk-save-as</property>
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
@@ -58,7 +63,7 @@
                     </child>
                     <child>
                       <widget class="GtkImageMenuItem" id="test_list_download_public">
-                        <property name="label">Przegl&#x105;daj testy _publiczne</property>
+                        <property name="label">gtk-find</property>
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>

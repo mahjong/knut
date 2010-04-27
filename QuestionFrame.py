@@ -4,9 +4,19 @@
 import gtk, pygtk, os
 
 class QuestionFrame(gtk.Frame):
-    """ Klasa zawierająca elementy pytania """
+    """ 
+    Klasa ramki pytania
+    """
 
     def __init__(self, item):
+        """
+        __init__(item)
+        
+        Inicjalizuje okno pytania, uzupełnia pytanie danymi ze zmiennej item
+    
+        Argumenty
+            * item - obiekt bierzącego pytania, jeśli brak to wyświetla puste pola do edycji
+        """
         gtk.Frame.__init__(self)
         self.set_label(" Pytanie ")
         self.text_view = gtk.TextView()
@@ -41,7 +51,13 @@ class QuestionFrame(gtk.Frame):
         self.add(self.question_vbox)
 
     def img_button_clicked(self, widget=None, data=None):
-        print("dodaje obrazek")
+        """
+        Otwiera okno wyboru pliku i wyświetla wybrany obrazek w sekcji pytania
+        
+        Argumenty
+            * widget - opcjonalnie, widżet, który wywołał metodę
+            * data  - opcjonalnie, dodatkowe dane zdefiniowane przy łączeniu 
+        """
 
         dialog = gtk.FileChooserDialog(" Dodaj obrazek... ",
                                  None,
@@ -70,6 +86,12 @@ class QuestionFrame(gtk.Frame):
         dialog.destroy()
 
     def add_img(self, img_filename):
+        """
+        Zmienia lub wyświetla nowy obrazek
+        
+        Argumenty
+            * img_filename - ścieżka do obrazka
+        """
         if len(self.question_vbox.get_children()) > 2:
             self.question_vbox.remove(self.image)
             self.img_button_hbox.remove(self.remove_btn)
@@ -88,13 +110,18 @@ class QuestionFrame(gtk.Frame):
         self.show_all()
 
     def remove_img(self, widget=None):
+        """
+        Usuwa obrazek z pytania
+        
+        Argumenty
+            * widget - opcjonalnie, widżet, który wywołał metodę
+        """
         self.img_button_hbox.remove(self.remove_btn)
         self.question_vbox.remove(self.image)
         self.img_button.set_label(" Dodaj obrazek ")
         if os.path.dirname(self.img_filename) == "":
             os.remove("test_files/%s/%s/%s"%(self.item.test_id, self.item.order, self.img_filename))
         self.img_filename = None
-
 
 if __name__ == "__main__":
     import Knut

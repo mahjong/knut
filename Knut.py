@@ -1,6 +1,5 @@
 #encoding:utf-8
 #!/usr/bin/env python
-
 import sys
 try:
     import pygtk
@@ -24,15 +23,33 @@ import mimetools
 from Print import Print
 
 class Knut:
+    """ 
+    Knut - Główna klasa
+            
+    Uruchamia okno główne i wczytuje konfiguracje glade
+    """
+    
+
     TEST_CATEGORIES = {'Różności': 0,
                        'Matematyka': 1,
                        'Informatyka': 2,
                        'Geografia': 3,
-                       'Historia': 4,}
+                       'Historia': 4}
+    """
+    Lista dostępnych kategorii testów:
     
-    """ Knut - Knowledge Assesment App"""
+    * Różności 
+    * Matematyka 
+    * Informatyka 
+    * Geografia 
+    * Historia 
+     """
     def __init__(self):
-
+        """
+        __init__()
+                
+        Inicjalizacja okna głównego i bazy danych
+        """
         self.test = None
         self.mainVboxStatus = 0
         self.program_mode = None
@@ -55,7 +72,13 @@ class Knut:
         self.checkdb()
 
     def test_new(self, widget=None, data=None):
-        """ Tworzenie nowego testu """
+        """ 
+        Tworzy nowy test
+        
+        Argumenty
+            * widget - opcjonalnie, widżet, który wywołał metodę
+            * data  - opcjonalnie, dodatkowe dane zdefiniowane przy łączeniu 
+        """
 
         self.current_item = 1
         self.total_items = 1
@@ -70,7 +93,13 @@ class Knut:
                 self.show_item(None)
 
     def test_browse(self, widget=None, data=0):
-        """ Przeglądanie testów z bazy danych """
+        """ 
+        Przeglądanie testów z bazy danych 
+        
+        Argumenty
+            * widget - opcjonalnie, widżet, który wywołał metodę
+            * data  - opcjonalnie, dodatkowe dane zdefiniowane przy łączeniu 
+        """
         
         self.clearMainVbox()
         self.program_mode = 2
@@ -121,8 +150,14 @@ class Knut:
 
         self.vbox_main.show_all()
 
-    def test_list_download(self, widget=None, data=None, get_config=True):
-        """ Przeglądanie testów z serwera """
+    def test_list_download(self, widget=None, data=None):
+        """ 
+        Pobiera listę testów z serwera
+        
+        Argumenty
+            * widget - opcjonalnie, widżet, który wywołał metodę
+            * data  - opcjonalnie, dodatkowe dane zdefiniowane przy łączeniu 
+        """
 
         if widget:
             self.public = widget.get_name() == 'test_list_download_public'
@@ -147,7 +182,7 @@ class Knut:
             else:
                 connection.request("POST","/test_list/", body, headers)
         except:
-            print(sys.exc_info()[0].__name__)
+            print 'request exception', sys.exc_info()[0].__name__
             #return show_alert()
         try:
             response = connection.getresponse()
@@ -166,11 +201,21 @@ class Knut:
                 msg.run()
                 msg.destroy()
         except:
-            self.save_error(re)
+            try:
+                self.save_error(re)
+            except NameError:
+                # re doesnt exist
+                pass
             self.show_msg(" Nie udało się pobrać listy testów ")
             return None
 
     def show_msg(self, msg):
+        """
+        Otwiera okno dialogowe
+        
+        Argumenty
+            * msg - zmienna tekstowa, wiadomość do wyświetlenia w oknie
+        """
         msg = gtk.MessageDialog(message_format=msg,flags=gtk.DIALOG_MODAL, type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_OK)
         msg.set_title(" Błąd ")
         msg.run()
@@ -178,7 +223,15 @@ class Knut:
         #self.program_mode = 0
 
     def test_browse_from_server(self, widget=None, data=0, title='', type=''):
-        print type
+        """
+        Wyświetla dane pobrane z serwera w formie tabelki
+        
+        Argumenty
+            * widget - opcjonalnie, widżet, który wywołał metodę
+            * data  - opcjonalnie, dodatkowe dane zdefiniowane przy łączeniu 
+            * title - opcjonalnie, tytuł wyświetlany nad tabelką
+            * type - opcjonalnie, typ tabelki (wyniki, odpowiedzi bądź testy)
+        """
         self.clearMainVbox()
         self.program_mode = 3
 
@@ -248,7 +301,13 @@ class Knut:
         self.vbox_main.show_all()
         
     def answers_download(self, widget, data):
-        """ Pobieranie odpowiedzi danego ucznia """
+        """
+        Pobieranie odpowiedzi danego ucznia
+        
+        Argumenty:
+            * widget - widżet, który wywołał metodę
+            * data  - dodatkowe dane zdefiniowane przy łączeniu
+        """
         if not self.get_selected_results(data):
             return None
         
@@ -291,7 +350,13 @@ class Knut:
             return None 
 
     def test_download_results_list(self, widget, data):
-        """ Pobranie listy wynikow, tylko dla testow uzytkownika """
+        """ 
+        Pobranie listy wynikow dla danego ucznia 
+        
+        Argumenty
+            * widget - widżet, który wywołał metodę
+            * data  - dodatkowe dane zdefiniowane przy łączeniu 
+        """
         if not self.get_current_test(data):
             return None
         
@@ -333,6 +398,15 @@ class Knut:
             return None
 
     def test_delete_from_server(self, widget, data):
+        """
+        Wysyła żądanie usunięcia testu do serwera
+        
+        Po otrzymaniu odpowiedzi wyświetla komunikat o statusie żądania
+        
+        Argumenty
+            * widget - widżet, który wywołał metodę
+            * data  - dodatkowe dane zdefiniowane przy łączeniu 
+        """
         if not self.get_current_test(data):
             return None
         boundary = mimetools.choose_boundary()
@@ -358,9 +432,16 @@ class Knut:
         msg.destroy()
 
         self.clearMainVbox()
-        self.test_list_download(get_config=False)
+        self.test_list_download()
 
     def test_download(self, widget, data):
+        """
+        Pobiera z serwera test i zapisuje go do bazy danych i na dysku
+        
+        Argumenty
+            * widget - widżet, który wywołał metodę
+            * data  - dodatkowe dane zdefiniowane przy łączeniu 
+        """
         if not self.get_current_test(data):
             return None
            
@@ -381,7 +462,7 @@ class Knut:
         connection.request("POST","/questions_download/", body, headers)
         response = connection.getresponse()
         if response.reason != "OK":
-            print response.reason
+            print 'Response reason', response.reason
             f = open("error.html", "w")
             f.write(response.read())
             f.close()
@@ -401,7 +482,7 @@ class Knut:
         connection.request("POST","/answers_download/", body, headers)
         response = connection.getresponse()
         if response.reason != "OK":
-            print response.reason
+            print 'Response reason', response.reason
             f = open("error.html", "w")
             f.write(response.read())
             f.close()
@@ -471,12 +552,21 @@ class Knut:
                     option_correct = {'true':True, 'false':False}[answer_option_xml.get("correct")]
                     item.option.append(Option(correct=option_correct, text=option_text, img=option_img ))
 
-            item.update()
+#            item.update()
             session.commit()
 
             self.test_browse()
 
     def test_delete(self, widget=None, data=None):
+        """
+        Otwiera okno z potwierdzeniem usunięcia testu
+        
+        Po potwierdzeniu usuwa z bazy i dysku wybrany test
+
+        Argumenty
+            * widget - opcjonalnie, widżet, który wywołał metodę
+            * data  - opcjonalnie, dodatkowe dane zdefiniowane przy łączeniu 
+        """
         if not self.get_current_test(data):
             return None
         msg = gtk.MessageDialog(parent=None, type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_OK_CANCEL)
@@ -492,6 +582,13 @@ class Knut:
         self.test_browse()
 
     def test_open(self, widget=None, data=None):
+        """
+        Otwiera wybrany test
+        
+        Argumenty
+            * widget - opcjonalnie, widżet, który wywołał metodę
+            * data  - opcjonalnie, dodatkowe dane zdefiniowane przy łączeniu 
+        """
         if not self.get_current_test(data):
             return None
         self.test.version += 1
@@ -505,17 +602,38 @@ class Knut:
             self.show_item(None)
 
     def test_edit_settings(self, widget=None, data=None):
+        """
+        Otwiera okno umożliwijące edycje ustawień testu
+        
+        Argumenty
+            * widget - opcjonalnie, widżet, który wywołał metodę
+            * data  - opcjonalnie, dodatkowe dane zdefiniowane przy łączeniu 
+        """
         if not self.get_current_test(data):
             return None
         self.read_config(self.test)
         self.test_browse()
     
     def test_print(self, widget=None, data=None):
+        """
+        Drukuje wybrany test
+        
+        Argumenty
+            * widget - opcjonalnie, widżet, który wywołał metodę
+            * data  - opcjonalnie, dodatkowe dane zdefiniowane przy łączeniu 
+        """
         if not self.get_current_test(data):
             return None
         p = Print(self.test)
 
     def read_config(self, existingConfig, warning=None):
+        """
+        Otwiera okno dialogowe, w którym podaje się ustawienia testu
+        
+        Argumenty
+            * existingConfig - obiekt testu, danymi z tego testu uzupełniane są pola okna dialogowego
+            * warning - opcjonalnie, zmienna logiczna, jeśli warning=True to wyświetla ostrzeżenie o nie wypełnieniu wszystkich pól
+        """
         wTree = gtk.glade.XML("Knut.glade", "testConfigDlg")
         configDlg = wTree.get_widget("testConfigDlg")
         enTitle = wTree.get_widget("enTitle")
@@ -578,15 +696,22 @@ class Knut:
             return False
 
     def load_server_conf(self):
-
+        """
+        Wczytuje konfiguracje serwera z pliku settings.txt do zmiennej self.server_conf
+        """
         if os.path.exists("settings.txt"):
             settings_file = file("settings.txt","rb")
             self.server_conf = settings_file.read().split(';')
         else:
             self.server_conf = None
 
-    def show_about_window(self, warning=None):
-
+    def show_about_window(self, widget):
+        """
+        Otwiera okno z podstawowymi informacjami o programie
+        
+        Argumenty
+            * widget - widżet, który wywołał metodę
+        """
         wTree = gtk.glade.XML("Knut.glade", "about")
         about_window = wTree.get_widget("about")
         about_window.run()
@@ -595,7 +720,12 @@ class Knut:
 #        btn_close = wTree.get_widget("close_about")
 
     def show_server_config_window(self, warning=None):
-
+        """
+        Otwiera okno z danymi serwera
+        
+        Argumenty
+            * warning - opcjonalnie, zmienna logiczna - jeśli waning=True pokazuje ostrzeżenie, że wszystkie pola muszą być wypełnione
+        """
         wTree = gtk.glade.XML("Knut.glade", "serverConfigDlg")
         serverConfigDlg = wTree.get_widget("serverConfigDlg")
         enAddress = wTree.get_widget("enAddress")
@@ -623,6 +753,15 @@ class Knut:
             serverConfigDlg.destroy()
 
     def test_upload(self, widget=None, data=None):
+        """
+        Zapisuje wybrany test do pliku xml, kompresuje test i oddzielnie odpowiedzi
+        
+        Przygotowuje plik do wysłania na serwer
+                
+        Argumenty
+            * widget - opcjonalnie, widżet, który wywołał metodę
+            * data - opcjonalnie, dodatkowe dane zdefiniowane przy łączeniu
+        """
         if not self.get_current_test(data):
             return None
         if (not self.server_conf) or self.server_conf==['']:
@@ -714,7 +853,13 @@ class Knut:
         os.remove(tar_file_path)
 
     def post_files(self, tar_file_path, answers_file_path):
-        """ wysyła archiwum z testem i odpowiedzi na serwer """
+        """ 
+        Wysyła archiwum z testem i plik xml z odpowiedziami na serwer 
+        
+        Argumenty
+            * tar_file_path - zmienna tekstowa, ścieżka do archiwum testu
+            * answers_file_path - zmienna tekstowa, ścieżka do pliku z odpowiedziami
+        """
         tar_file_name = os.path.basename(tar_file_path)
         answers_file_name = os.path.basename(answers_file_path)
         print(tar_file_name,answers_file_name)
@@ -754,8 +899,13 @@ class Knut:
         msg.run()
         msg.destroy()
 
-    def get_current_test(self, data):
-        """ zapisuje test w zmiennej self.test """
+    def get_current_test(self, offset):
+        """
+        Zapisuje aktualnie zaznaczony test w zmiennej self.test 
+        
+        Argumenty
+            * offset - offset przy stronicowaniu np. na drugiej stronie wybieramy 3 test czyli 13 w bazie danych
+        """
         try:
             if self.program_mode == 1: #zapisz jesli nie ma bledow
                 self.validate_input()
@@ -764,25 +914,30 @@ class Knut:
             elif self.program_mode == 2: #wybierz zaznaczony test
                 iter = self.treeView.get_selection().get_selected()[1]
                 index = self.treeView.listStore.get_path(iter)[0]
-                self.test = Test.query.offset(data+index).limit(1).first()
+                self.test = Test.query.offset(offset+index).limit(1).first()
             elif self.program_mode == 3:
                 iter = self.treeView.get_selection().get_selected()[1]
                 index = self.treeView.listStore.get_path(iter)[0]
-                self.test_id = self.tests.test[data+index].id_unq
-                self.test_password = self.tests.test[data+index].password
-                self.test_title = self.tests.test[data+index].title
+                self.test_id = self.tests.test[offset+index].id_unq
+                self.test_password = self.tests.test[offset+index].password
+                self.test_title = self.tests.test[offset+index].title
             return True
         except:
             self.show_msg(" Proszę wybrać test ")
             return False
 
-    def get_selected_results(self, data):
-        """ zapisuje id wybrango uzytkownika w zmiennej self.result_username """
+    def get_selected_results(self, offset):
+        """
+        Zapisuje id aktualnie zaznaczonego ucznia w zmiennej self.result_username 
+        
+        Argumenty
+            * offset - offset przy stronicowaniu np. na drugiej stronie wybieramy 3 wyniki czyli 13 w bazie danych
+        """
         try:
             iter = self.treeView.get_selection().get_selected()[1]
             index = self.treeView.listStore.get_path(iter)[0]
-            self.result_id = self.results.result[data+index].getchildren()[0]
-            self.result_username = self.results.result[data+index].getchildren()[1]
+            self.result_id = self.results.result[offset+index].getchildren()[0]
+            self.result_username = self.results.result[offset+index].getchildren()[1]
             
             return True
         except:
@@ -790,16 +945,26 @@ class Knut:
             return False
 
     def destroy_main_window(self, widget, data=None):
+        """
+        Metoda uruchamiana przy zdarzeniu zamknięcia programu
+        
+        Zapisuje ustawienia serwera do pliku settings.txt
+        
+        Argumenty
+            * widget - widżet, który wywołał metodę
+            * data - opcjonalnie, dodatkowe dane zdefiniowane przy łączeniu
+        """
 
         if self.server_conf and self.server_conf!=['']:
             settings_file = file("settings.txt","w")
             settings_file.write("%s;%s;%s"%(self.server_conf[0],self.server_conf[1],self.server_conf[2]))
             settings_file.close()
-        print("zamykam")
         gtk.main_quit()
 
     def clearMainVbox(self):
-        #usuwanie poprzednich
+        """
+        Usuwa widżety z głównego okna programu
+        """
 
         if self.program_mode == 1:
             if self.nav_hbox:
@@ -818,6 +983,12 @@ class Knut:
                     pass
 
     def show_item(self, item=None):
+        """
+        Wyświetla bierzące pytanie w oknie głównym programu
+        
+        Argumenty
+            * item - obiekt bierzącego pytania
+        """
         self.clearMainVbox()
         self.program_mode = 1
 
@@ -846,6 +1017,13 @@ class Knut:
         self.vbox_main.show_all()
 
     def prev_btn_clicked(self, widget, data=None):
+        """
+        Zmienia aktualnie wyświetlane pytanie na poprzednie
+        
+        Argumenty
+            * widget - widżet, który wywołał metodę
+            * data - opcjonalnie, dodatkowe dane zdefiniowane przy łączeniu
+        """
         self.validate_input()
 
         if self.current_item == self.total_items and self.validation_error:
@@ -861,6 +1039,13 @@ class Knut:
             self.show_item(Item.get_by(test_id=self.test.id, order=self.current_item))
 
     def next_btn_clicked(self, widget, data=None):
+        """
+        Zmienia aktualnie wyświetlane pytanie na następne
+        
+        Argumenty
+            * widget - widżet, który wywołał metodę
+            * data - opcjonalnie, dodatkowe dane zdefiniowane przy łączeniu
+        """
         self.validate_input()
 
         if self.validation_error:
@@ -874,14 +1059,22 @@ class Knut:
             self.show_item(Item.get_by(test_id=self.test.id, order=self.current_item))
 
     def add_or_update_item(self):
+        """
+        Aktualizuje lub tworzy aktualnie widoczne pytanie w bazie danych
+        """
+#        print '\n\n\nadd_or_update'
         item = Item.get_by(test_id=self.test.id, order=self.current_item)
         type_id = self.answer_frame.answer_type_combo.get_active()
         if item:
+#            print item.question
             item.question.delete()
             for op in item.option:
+#                print op
+#                print type(op)
                 op.delete()
             item.type = u(self.get_item_type(type_id))
-            item.update()
+#            print type(item)
+#            item.update()
         else:
             item = Item(order=self.current_item, type=unicode(self.get_item_type(type_id)))
             self.test.item.append(item)
@@ -920,10 +1113,18 @@ class Knut:
                 acorrect = False
             item.option.append(Option(correct=acorrect, text=u"", img=u""))
 
-        item.update()
+#        item.save()
         session.commit()
 
     def prepare_img(self, img_path, dir_path, prefix):
+        """
+        Kopiuje obrazek do katalogu dla danego testu i pytania
+        
+        Argumenty
+            * img_path - zmienna tekstowa, ścieżka do obrazka
+            * dir_path - zmienna tekstowa, ścieżka do katalogu, do którego obrazek bedzie kopiowany
+            * prefix - prefix nazwy pliku obrazka w celu uniknięcia nadpisania obrazków o tej samej nazwie 
+        """
         img_filename = os.path.basename(img_path)
         if os.path.dirname(img_path) == "":
             return img_filename
@@ -933,8 +1134,17 @@ class Knut:
             return img_filename
 
     def get_item_type(self, id):
-#        if id == 1:
-#            return "txt"
+        """
+        Zamienia id typu odpowiedzi na zmienną tekstową
+        
+        Argumenty
+            * id - liczba całkowita:
+        
+        Wartości zwracane
+            * 1 -> 'one' - pytanie jednokrotnego wyboru
+            * 2 -> 'mul' - pytanie wielokrotnego wyboru
+            * 3 -> 't/f' - pytanie typu prawda/fałsz
+        """
         if id == 1:
             return "one"
         elif id == 2:
@@ -943,13 +1153,21 @@ class Knut:
             return "t/f"
 
     def checkdb(self):
-        """ Przygotowuje baze danych """
+        """
+        Sprawdza czy istnieje baza danych
+        
+         * jeśli istnieje to przygotowuje połączenie
+         * jeśli bazy nie ma to tworzy tabele i łaczy z bazą
+        """
         if os.path.exists("tests.sqlite"):
             setup_all()
         else:
             setup_all(True)# tworzenie bazy
 
     def validate_input(self):
+        """
+        Sprawdza czy aktualnie edytowane pytanie ma wypełnione wszystkie wymagane pola
+        """
         self.validation_error = ""
 
         if (self.question_frame.buffer.get_char_count() == 0) and (len(self.question_frame.question_vbox.get_children()) < 3):
@@ -968,6 +1186,12 @@ class Knut:
         #print self.validation_error
 
     def save_error(self, text):
+        """
+        W przypadku błędu w komunikacji z serwerem zapisuje odpowiedź serwera do pliku error.html
+        
+        Argumenty
+            * text - zmienna tekstowa, treść błędu
+        """
         f = open('error.html', 'w')
         f.write(text)
         f.close()

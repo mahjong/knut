@@ -23,14 +23,14 @@ class TreeViewTestBrowser(gtk.TreeView):
             for test in items:
 #                print test.instructions
                 if type(test.instructions) is unicode:
-                    self.listStore.append([test.id, test.title, test.instructions[:50], test.version])
+                    self.listStore.append([test.id, test.title, test.instructions[:30], test.version])
                 else:
-                    self.listStore.append([test.id_unq, test.title, test.instructions.text[:50], test.version])
+                    self.listStore.append([test.id_unq, test.title, test.instructions.text[:30], test.version])
         elif tv_type == 'answers':
             for item in items:
                 listStore_list = [item.get('id'),]
                 for option in item.getchildren():
-                    listStore_list.append({'True': 'Prawda', 'False': 'Fałsz'}[str(option)])
+                    listStore_list.append({'true': 'Prawda', 'false': 'Fałsz'}[str(option)])
                 for x in range(len(listStore_list),5):
                     listStore_list.append('')
                 print item.get('all_correct')

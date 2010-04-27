@@ -1,0 +1,12 @@
+\select@language {polish}
+\contentsline {chapter}{\numberline {1}Knut - G\IeC {\l }\IeC {\'o}wna klasa z logik\IeC {\k a} programu}{3}{chapter.1}
+\contentsline {chapter}{\numberline {2}QuestionFrame - Klasa ramki pytania}{9}{chapter.2}
+\contentsline {chapter}{\numberline {3}AnswerFrame - Klasa ramki w kt\IeC {\'o}rej znajduj\IeC {\k a} si\IeC {\k e} mo\IeC {\.z}liwe odpowiedzi}{11}{chapter.3}
+\contentsline {chapter}{\numberline {4}Opis klas bazy danych}{13}{chapter.4}
+\contentsline {section}{\numberline {4.1}Klasa opisuj\IeC {\k a}ca tabel\IeC {\k e} test\IeC {\'o}w}{13}{section.4.1}
+\contentsline {section}{\numberline {4.2}Klasa opisuj\IeC {\k a}ca tabel\IeC {\k e} element\IeC {\'o}w testu}{13}{section.4.2}
+\contentsline {section}{\numberline {4.3}Klasa opisuj\IeC {\k a}ca tabel\IeC {\k e} pyta\IeC {\'n}}{14}{section.4.3}
+\contentsline {section}{\numberline {4.4}Klasa opisuj\IeC {\k a}ca tabel\IeC {\k e} mo\IeC {\.z}liwych odpowiedzi}{14}{section.4.4}
+\contentsline {chapter}{\numberline {5}Indeksy i tabele}{15}{chapter.5}
+\contentsline {chapter}{Indeks modu\IeC {\l }\IeC {\'o}w}{17}{section*.2}
+\contentsline {chapter}{Indeks}{19}{section*.3}
