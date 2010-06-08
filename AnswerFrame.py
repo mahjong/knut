@@ -6,17 +6,19 @@ import gtk, pygtk, os
 class AnswerFrame(gtk.Frame):
     """ Klasa ramki w której znajdują się możliwe odpowiedzi """
 
-    def __init__(self, item=None):
+    def __init__(self, item, data_path):
         """
         __init__(item=None)
         
         Inicjalizuje ramke odpowiedzi, uzupełnia pola danymi ze zmiennej item
     
         Argumenty
-            * item - opcjonalnie, obiekt bierzącego pytania, jeśli brak to wyświetla puste pola do edycji
+            * item - obiekt bierzącego pytania, jeśli brak to wyświetla puste pola do edycji
+            * data_path - zmienna tekstowa, ścieżka do katalogu z danymi testu
         """
         gtk.Frame.__init__(self)
         self.item = None
+        self.data_path = data_path
         self.set_label(" Odpowiedź ")
         self.answer_type_combo = gtk.combo_box_new_text()
         self.answer_type_combo.insert_text(0, " Wybierz typ odpowiedzi ")
@@ -29,7 +31,7 @@ class AnswerFrame(gtk.Frame):
         self.answer_vbox.pack_start(self.answer_type_combo, False, False, 0)
         if item and item.type:
             self.item = item
-            self.dir_path = "test_files/%s/%s"%(self.item.test_id, self.item.order)
+            self.dir_path = os.path.join(self.data_path, "test_files/%s/%s"%(self.item.test_id, self.item.order))
             self.answer_type_combo.set_active(self.get_type_index(item.type))
         else:
             self.answer_type_combo.set_active(0)

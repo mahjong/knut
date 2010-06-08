@@ -104,5 +104,3 @@ Indeksy i tabele
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

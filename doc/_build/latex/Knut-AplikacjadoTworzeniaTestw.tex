@@ -9,8 +9,8 @@
 \usepackage{sphinx}
 
 
-\title{Knut - Aplikacja do Tworzenia Testów Documentation}
-\date{April 28 2010}
+\title{Dokumentacja - Knut - Aplikacja do Tworzenia Testów}
+\date{May 05 2010}
 \release{0.1}
 \author{Wiktor Idzikowski}
 \newcommand{\sphinxlogo}{}
@@ -845,17 +845,17 @@ Opis pól:
 \index{author (dbmodel.Test atrybut)}
 
 \hypertarget{dbmodel.Test.author}{}\begin{memberdesc}{author}
-Imię i nazwisko autora
+Imię i nazwisko autora (30 znaków)
 \end{memberdesc}
 \index{category (dbmodel.Test atrybut)}
 
 \hypertarget{dbmodel.Test.category}{}\begin{memberdesc}{category}
-Kategoria w jakiej test się znajduje
+Kategoria w jakiej test się znajduje (30 znaków)
 \end{memberdesc}
 \index{instructions (dbmodel.Test atrybut)}
 
 \hypertarget{dbmodel.Test.instructions}{}\begin{memberdesc}{instructions}
-Instrukcje przydatne przy rozwiązywaniu testu
+Instrukcje przydatne przy rozwiązywaniu testu (256 znaków)
 \end{memberdesc}
 \index{item (dbmodel.Test atrybut)}
 
@@ -865,22 +865,22 @@ Relacje jeden do wielu z tabelą elementów testu
 \index{password (dbmodel.Test atrybut)}
 
 \hypertarget{dbmodel.Test.password}{}\begin{memberdesc}{password}
-Hasło
+Hasło (30 znaków)
 \end{memberdesc}
 \index{time (dbmodel.Test atrybut)}
 
 \hypertarget{dbmodel.Test.time}{}\begin{memberdesc}{time}
-Czas na ukończenie testu
+Czas na ukończenie testu (liczba całkowita)
 \end{memberdesc}
 \index{title (dbmodel.Test atrybut)}
 
 \hypertarget{dbmodel.Test.title}{}\begin{memberdesc}{title}
-Tytuł testu
+Tytuł testu (30 znaków)
 \end{memberdesc}
 \index{version (dbmodel.Test atrybut)}
 
 \hypertarget{dbmodel.Test.version}{}\begin{memberdesc}{version}
-Wersja testu
+Wersja testu (liczba całkowita)
 \end{memberdesc}
 \end{classdesc}
 \hypertarget{dbmodel-item}{}
@@ -898,7 +898,7 @@ Relacja jeden do jednego z tabelą możliwych odpowiedzi
 \index{order (dbmodel.Item atrybut)}
 
 \hypertarget{dbmodel.Item.order}{}\begin{memberdesc}{order}
-Kolejność elementu
+Kolejność elementu (liczba całkowita)
 \end{memberdesc}
 \index{question (dbmodel.Item atrybut)}
 
@@ -913,7 +913,7 @@ Relacja z wiele do jednego z testem
 \index{type (dbmodel.Item atrybut)}
 
 \hypertarget{dbmodel.Item.type}{}\begin{memberdesc}{type}
-Typ elementu
+Typ elementu (3 znaki)
 \end{memberdesc}
 \end{classdesc}
 \hypertarget{dbmodel-question}{}
@@ -926,7 +926,7 @@ Klasa opisująca tabelę pytań
 \index{img (dbmodel.Question atrybut)}
 
 \hypertarget{dbmodel.Question.img}{}\begin{memberdesc}{img}
-Nazwa obrazka
+Nazwa obrazka (30 znaków)
 \end{memberdesc}
 \index{item (dbmodel.Question atrybut)}
 
@@ -936,7 +936,7 @@ Relacja wiele do jednego z tabelą elementów testu
 \index{text (dbmodel.Question atrybut)}
 
 \hypertarget{dbmodel.Question.text}{}\begin{memberdesc}{text}
-Tekst pytania
+Tekst pytania (256 znaków)
 \end{memberdesc}
 \end{classdesc}
 \hypertarget{dbmodel-option}{}
@@ -954,7 +954,7 @@ Poprawność odpowiedzi
 \index{img (dbmodel.Option atrybut)}
 
 \hypertarget{dbmodel.Option.img}{}\begin{memberdesc}{img}
-Nazwa obrazka
+Nazwa obrazka (30 znaków)
 \end{memberdesc}
 \index{item (dbmodel.Option atrybut)}
 
@@ -964,7 +964,7 @@ Relacja wiele do jednego z tabelą elementów testu
 \index{text (dbmodel.Option atrybut)}
 
 \hypertarget{dbmodel.Option.text}{}\begin{memberdesc}{text}
-Tekst odpowiedzi
+Tekst odpowiedzi (256 znaków)
 \end{memberdesc}
 \end{classdesc}
 
@@ -973,12 +973,6 @@ Tekst odpowiedzi
 \begin{itemize}
 \item {} 
 \emph{Index}
-
-\item {} 
-\emph{Module Index}
-
-\item {} 
-\emph{Search Page}
 
 \end{itemize}
 

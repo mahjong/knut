@@ -174,7 +174,7 @@ htmlhelp_basename = 'Knut-AplikacjadoTworzeniaTestwdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Knut-AplikacjadoTworzeniaTestw.tex', u'Knut - Aplikacja do Tworzenia Testów Documentation',
+  ('index', 'Knut-AplikacjadoTworzeniaTestw.tex', u'Dokumentacja - Knut - Aplikacja do Tworzenia Testów',
    u'Wiktor Idzikowski', 'manual'),
 ]
 

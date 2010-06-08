@@ -53,22 +53,32 @@
                     </child>
                     <child>
                       <widget class="GtkImageMenuItem" id="test_list_download">
-                        <property name="label">gtk-save-as</property>
+                        <property name="label">Przegl&#x105;daj na serwerze</property>
                         <property name="visible">True</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
+                        <property name="use_stock">False</property>
                         <signal name="activate" handler="on_test_list_download_activate" object="1" after="yes"/>
                         <accelerator key="F3" signal="activate"/>
+                        <child internal-child="image">
+                          <widget class="GtkImage" id="image2">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-save-as</property>
+                          </widget>
+                        </child>
                       </widget>
                     </child>
                     <child>
                       <widget class="GtkImageMenuItem" id="test_list_download_public">
-                        <property name="label">gtk-find</property>
+                        <property name="label">Przegl&#x105;daj testy publiczne</property>
                         <property name="visible">True</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
+                        <property name="use_stock">False</property>
                         <signal name="activate" handler="on_test_list_download_public_activate"/>
                         <accelerator key="F4" signal="activate"/>
+                        <child internal-child="image">
+                          <widget class="GtkImage" id="image3">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-save-as</property>
+                          </widget>
+                        </child>
                       </widget>
                     </child>
                     <child>

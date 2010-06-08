@@ -1,5 +1,5 @@
+#! /usr/bin/env python
 #encoding:utf-8
-#!/usr/bin/env python
 import sys
 try:
     import pygtk
@@ -53,8 +53,9 @@ class Knut:
         self.test = None
         self.mainVboxStatus = 0
         self.program_mode = None
-        self.load_server_conf()
-        wTree = gtk.glade.XML("Knut.glade","mainWindow")
+        self.absdir = os.path.split(os.path.abspath(__file__))[0]
+        self.user_home = os.path.expanduser('~')
+        wTree = gtk.glade.XML(os.path.join(self.absdir, "Knut.glade"),"mainWindow")
 
         self.vbox_main = wTree.get_widget("vbox_main")
 
@@ -69,7 +70,23 @@ class Knut:
 
         wTree.signal_autoconnect(dict)
 
+        self.data_path = self.check_testdir()
+        db_path = os.path.join(self.data_path, "tests.sqlite")
+        metadata.bind = "sqlite:///%s" % db_path 
+        metadata.bind.echo = False
         self.checkdb()
+        
+        self.load_server_conf()
+
+    def check_testdir(self):
+        path_to_check = os.path.expanduser('~')
+        if not os.path.exists(os.path.join(path_to_check, '.knutapp')):
+            os.mkdir(os.path.join(path_to_check, '.knutapp'))
+        path_to_check = os.path.join(path_to_check, '.knutapp')
+        #os.path.split(os.path.abspath(__file__))[0]
+        if not os.path.exists(os.path.join(path_to_check, 'test_files')):
+            os.mkdir(os.path.join(path_to_check, 'test_files'))
+        return path_to_check
 
     def test_new(self, widget=None, data=None):
         """ 
@@ -334,7 +351,7 @@ class Knut:
         try:
             response = connection.getresponse()
             re = response.read()
-            print re
+            #print re
             self.answers = objectify.fromstring(re)
             if self.answers.countchildren() > 0:
                 title = ' Odpowiedzi ucznia: %s' % self.result_username
@@ -382,7 +399,7 @@ class Knut:
             response = connection.getresponse()
             re = response.read()
 #            print re
-            print re
+#            print re
             self.results = objectify.fromstring(re)
             if self.results.countchildren() > 0:
                 title = 'Wyniki testu %s' % self.test_title
@@ -447,7 +464,7 @@ class Knut:
            
         self.test = Test()
         session.commit()
-        os.mkdir("test_files/%s"%self.test.id)
+        os.mkdir(os.path.join(self.data_path, "test_files/%s"%self.test.id))
 
         boundary = mimetools.choose_boundary()
         body_list = []
@@ -467,10 +484,10 @@ class Knut:
             f.write(response.read())
             f.close()
             self.test.delete()
-            os.rmdir("test_files/%s/"%self.test.id)
+            os.rmdir(os.path.join(self.data_path,"test_files/%s/"%self.test.id))
             return ""
 
-        questions_file = open("test_files/%s/questions.tar.bz2"%self.test.id, "w")
+        questions_file = open(os.path.join(self.data_path, "test_files/%s/questions.tar.bz2"%self.test.id), "w")
         questions_file.write(response.fp.read())
         questions_file.close()
 
@@ -487,21 +504,21 @@ class Knut:
             f.write(response.read())
             f.close()
             self.test.delete()
-            os.rmdir("test_files/%s/"%self.test.id)
+            os.rmdir(os.path.join(self.data_path, "test_files/%s/"%self.test.id))
             return ""
 
-        answers_file = open("test_files/%s/answers.xml"%self.test.id, "w")
+        answers_file = open(os.path.join(self.data_path, "test_files/%s/answers.xml"%self.test.id), "w")
         answers_response = response.fp.read()
         answers_file.write(answers_response)
         answers_file.close()
 
         #zapisanie testu
-        questions_file = tarfile.open("test_files/%s/questions.tar.bz2"%self.test.id,"r")
-        questions_file.extractall(path="test_files/%s/"%self.test.id)
-        os.remove("test_files/%s/questions.tar.bz2"%self.test.id)
+        questions_file = tarfile.open(os.path.join(self.data_path, "test_files/%s/questions.tar.bz2"%self.test.id),"r")
+        questions_file.extractall(path=os.path.join(self.data_path, "test_files/%s/"%self.test.id))
+        os.remove(os.path.join(self.data_path, "test_files/%s/questions.tar.bz2"%self.test.id))
 
-        test_xml = objectify.parse("test_files/%s/test.xml"%self.test.id).getroot()
-        answers_xml = objectify.parse("test_files/%s/answers.xml"%self.test.id).getroot()
+        test_xml = objectify.parse(os.path.join(self.data_path, "test_files/%s/test.xml"%self.test.id)).getroot()
+        answers_xml = objectify.parse(os.path.join(self.data_path, "test_files/%s/answers.xml"%self.test.id)).getroot()
 
         self.test.title = u(test_xml.config.title)
         self.test.author = u(test_xml.config.author)
@@ -573,7 +590,7 @@ class Knut:
         msg.set_title(" Usuwanie testu ")
         msg.label.set_text(" Usunąć wybrany test? ")
         if msg.run() == gtk.RESPONSE_OK:
-            shutil.rmtree("test_files/%s/"%self.test.id)
+            shutil.rmtree(os.path.join(self.data_path, "test_files/%s/"%self.test.id))
             self.test.delete()
             session.commit()
             self.test = None
@@ -634,7 +651,8 @@ class Knut:
             * existingConfig - obiekt testu, danymi z tego testu uzupełniane są pola okna dialogowego
             * warning - opcjonalnie, zmienna logiczna, jeśli warning=True to wyświetla ostrzeżenie o nie wypełnieniu wszystkich pól
         """
-        wTree = gtk.glade.XML("Knut.glade", "testConfigDlg")
+        wTree = gtk.glade.XML(os.path.join(self.absdir, "Knut.glade"), "testConfigDlg")
+
         configDlg = wTree.get_widget("testConfigDlg")
         enTitle = wTree.get_widget("enTitle")
         enAuthor = wTree.get_widget("enAuthor")
@@ -672,7 +690,7 @@ class Knut:
                 nCategory = u(cmbCategory.get_active_text())
                 self.test = Test(title=nTitle,author=nAuthor,instructions=nInstructions,time=nTime,password=nPassword,category=nCategory, version=1)
                 session.commit()
-                os.mkdir("test_files/%s"%self.test.id)
+                os.mkdir(os.path.join(self.data_path, "test_files/%s"%self.test.id))
                 configDlg.destroy()
                 return True
             #updating test
@@ -699,8 +717,8 @@ class Knut:
         """
         Wczytuje konfiguracje serwera z pliku settings.txt do zmiennej self.server_conf
         """
-        if os.path.exists("settings.txt"):
-            settings_file = file("settings.txt","rb")
+        if os.path.exists(os.path.join(self.data_path,"settings.txt")):
+            settings_file = file(os.path.join(self.data_path,"settings.txt"),"rb")
             self.server_conf = settings_file.read().split(';')
         else:
             self.server_conf = None
@@ -712,7 +730,8 @@ class Knut:
         Argumenty
             * widget - widżet, który wywołał metodę
         """
-        wTree = gtk.glade.XML("Knut.glade", "about")
+        wTree = gtk.glade.XML(os.path.join(self.absdir, "Knut.glade"), "about")
+        
         about_window = wTree.get_widget("about")
         about_window.run()
         about_window.destroy()
@@ -726,13 +745,13 @@ class Knut:
         Argumenty
             * warning - opcjonalnie, zmienna logiczna - jeśli waning=True pokazuje ostrzeżenie, że wszystkie pola muszą być wypełnione
         """
-        wTree = gtk.glade.XML("Knut.glade", "serverConfigDlg")
+        wTree = gtk.glade.XML(os.path.join(self.absdir, "Knut.glade"), "serverConfigDlg")
         serverConfigDlg = wTree.get_widget("serverConfigDlg")
         enAddress = wTree.get_widget("enAddress")
         enLogin = wTree.get_widget("enLogin")
         enPassword = wTree.get_widget("enPassword")
 
-        if self.server_conf and self.server_conf!=['']:
+        if self.server_conf and self.server_conf != ['']:
             enAddress.set_text(self.server_conf[0])
             enLogin.set_text(self.server_conf[1])
             enPassword.set_text(self.server_conf[2])
@@ -743,9 +762,9 @@ class Knut:
             labWarning.set_markup('<span foreground="red"><b>Wszystkie</b> pola muszą być uzupełnione</span>')
 
         if serverConfigDlg.run() == 1: #OK
-            if len(enAddress.get_text())!=0 and len(enLogin.get_text())!=0 and len(enPassword.get_text())!=0:
-                serverConfigDlg.destroy()
+            if len(enAddress.get_text()) != 0 and len(enLogin.get_text()) != 0 and len(enPassword.get_text()) != 0:
                 self.server_conf = [enAddress.get_text(), enLogin.get_text(), enPassword.get_text()]
+                serverConfigDlg.destroy()
             else:
                 serverConfigDlg.destroy()
                 self.show_server_config_window(warning=True)
@@ -769,7 +788,7 @@ class Knut:
             return None
         #przygotowanie testu
         em = objectify.ElementMaker()
-        em._nsmap = {None:"http://mahjong.rootnode.net/kvml"}
+#        em._nsmap = {None:"http://mahjong.rootnode.net/kvml"}
         xml_test = em.test()
         config = em.config()
         config.append(em.title(self.test.title))
@@ -824,25 +843,34 @@ class Knut:
 
             xml_test.append(xml_item)
             xml_answers.append(xml_item_answer)
-        print etree.tostring(xml_test, pretty_print=True)
-        print("-"*20)
-        print(etree.tostring(xml_answers, pretty_print=True))
-        xml_file_path = "test_files/%s/test.xml"%self.test.id
+        #print etree.tostring(xml_test, pretty_print=True)
+        #print("-"*20)
+        #print(etree.tostring(xml_answers, pretty_print=True))
+        xml_file_path = os.path.join(self.data_path, "test_files/%s/test.xml"%self.test.id)
         xml_file = open(xml_file_path,"w")
         xml_file.write(etree.tostring(xml_test, pretty_print=True, encoding="utf-8", xml_declaration=True))
         xml_file.close()
 
-        os.chdir("test_files/%s"%self.test.id)
+#        os.chdir("test_files/%s"%self.test.id)
+#        tar_file_name = "questions.tar.bz2"
+#        tar_file_path = "test_files/%s/%s"%(self.test.id, tar_file_name)
+#        tar_file = tarfile.open(tar_file_name ,"w:bz2")
+#        for file in os.listdir("."):
+#            tar_file.add(file)
+#        tar_file.close()
+#        os.chdir("../..")
+        curdir = os.path.abspath('.')
+        os.chdir(os.path.join(self.data_path,"test_files/%s" % self.test.id))
         tar_file_name = "questions.tar.bz2"
-        tar_file_path = "test_files/%s/%s"%(self.test.id, tar_file_name)
-        tar_file = tarfile.open(tar_file_name ,"w:bz2")
-        for file in os.listdir("."):
+        tar_file_path = os.path.join(self.data_path,"test_files/%s/%s"%(self.test.id, tar_file_name))
+        tar_file = tarfile.open(tar_file_path ,"w:bz2")
+        for file in os.listdir('.'):
             tar_file.add(file)
         tar_file.close()
-        os.chdir("../..")
+        os.chdir(curdir)
 
-        os.remove("test_files/%s/test.xml"%self.test.id)
-        xml_file_answers_path = "test_files/%s/answers.xml"%self.test.id
+        os.remove(os.path.join(self.data_path,"test_files/%s/test.xml"%self.test.id))
+        xml_file_answers_path = os.path.join(self.data_path, "test_files/%s/answers.xml"%self.test.id)
         xml_file_answers = open(xml_file_answers_path, "w")
         xml_file_answers.write(etree.tostring(xml_answers, pretty_print=True, encoding="utf-8", xml_declaration=True))
         xml_file_answers.close()
@@ -862,7 +890,7 @@ class Knut:
         """
         tar_file_name = os.path.basename(tar_file_path)
         answers_file_name = os.path.basename(answers_file_path)
-        print(tar_file_name,answers_file_name)
+        #print(tar_file_name,answers_file_name)
         boundary = mimetools.choose_boundary()
         tar_file = open(tar_file_path, "rb")
         answers_file = open(answers_file_path, "rb")
@@ -956,7 +984,7 @@ class Knut:
         """
 
         if self.server_conf and self.server_conf!=['']:
-            settings_file = file("settings.txt","w")
+            settings_file = file(os.path.join(self.data_path,"settings.txt"),"w")
             settings_file.write("%s;%s;%s"%(self.server_conf[0],self.server_conf[1],self.server_conf[2]))
             settings_file.close()
         gtk.main_quit()
@@ -1007,11 +1035,11 @@ class Knut:
         self.vbox_main.pack_start(self.nav_hbox, False, False, 0)
 
         #pytanie
-        self.question_frame = QuestionFrame.QuestionFrame(item)
+        self.question_frame = QuestionFrame.QuestionFrame(item, self.data_path)
         self.vbox_main.pack_start(self.question_frame, False, False, 0)
 
         #odpowiedź
-        self.answer_frame = AnswerFrame.AnswerFrame(item)
+        self.answer_frame = AnswerFrame.AnswerFrame(item, self.data_path)
         self.vbox_main.pack_start(self.answer_frame, False, False, 0)
 
         self.vbox_main.show_all()
@@ -1080,7 +1108,7 @@ class Knut:
             self.test.item.append(item)
 
         session.commit()
-        dir_path = "test_files/%s/%s"%(self.test.id, item.order)
+        dir_path = os.path.join(self.data_path, "test_files/%s/%s"%(self.test.id, item.order))
         if not os.path.isdir(dir_path):
             os.mkdir(dir_path)
 
@@ -1159,7 +1187,7 @@ class Knut:
          * jeśli istnieje to przygotowuje połączenie
          * jeśli bazy nie ma to tworzy tabele i łaczy z bazą
         """
-        if os.path.exists("tests.sqlite"):
+        if os.path.exists(os.path.join(self.data_path, "tests.sqlite")):
             setup_all()
         else:
             setup_all(True)# tworzenie bazy

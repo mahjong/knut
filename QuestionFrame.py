@@ -8,7 +8,7 @@ class QuestionFrame(gtk.Frame):
     Klasa ramki pytania
     """
 
-    def __init__(self, item):
+    def __init__(self, item, data_path):
         """
         __init__(item)
         
@@ -18,6 +18,7 @@ class QuestionFrame(gtk.Frame):
             * item - obiekt bierzącego pytania, jeśli brak to wyświetla puste pola do edycji
         """
         gtk.Frame.__init__(self)
+        self.data_path = data_path
         self.set_label(" Pytanie ")
         self.text_view = gtk.TextView()
         self.text_view.set_size_request(100, 100)
@@ -30,7 +31,7 @@ class QuestionFrame(gtk.Frame):
         self.question_vbox = gtk.VBox()
         if self.item and self.item.question.img:
             self.img_filename = self.item.question.img
-            dir_path = "test_files/%s/%s"%(self.item.test_id, self.item.order)
+            dir_path = os.path.join(self.data_path, "test_files/%s/%s"%(self.item.test_id, self.item.order))
             self.pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(os.path.join(dir_path,self.img_filename), 200, 100)
             self.image = gtk.image_new_from_pixbuf(self.pixbuf)
             self.img_button = gtk.Button(" Zmień obrazek ")
