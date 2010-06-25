@@ -77,7 +77,6 @@ class TreeViewTestBrowser(gtk.TreeView):
             self.tvCol1.set_attributes(self.cell1, text=1)
             self.tvCol2.set_attributes(self.cell2, text=2)
             self.tvCol3.set_attributes(self.cell3, text=3)
-            
 
         self.treeView.set_search_column(0)
 
@@ -87,3 +86,4 @@ class TreeViewTestBrowser(gtk.TreeView):
         self.tvCol3.set_sort_column_id(3)
         if tv_type == 'answers':
             self.tvCol3.set_sort_column_id(4)
+

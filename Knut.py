@@ -526,6 +526,7 @@ class Knut:
         self.test.time = int(test_xml.config.time)
         self.test.password = u(test_xml.config.password)
         self.test.version = int(test_xml.config.version)
+        self.test.category = u(test_xml.config.category)
         session.commit()
 
         test_xml.remove(test_xml.config)
@@ -702,7 +703,7 @@ class Knut:
                 self.test.time = int(enTime.get_text())
                 self.test.password = u(enPassword.get_text())
                 self.test.category = u(cmbCategory.get_active_text())
-                self.test.update()
+#                self.test.update()
                 session.commit()
                 configDlg.destroy()
                 return True
