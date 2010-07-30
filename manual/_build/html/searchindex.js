@@ -1,0 +1,1 @@
+Search.setIndex({objects:{},terms:{"u\u017cytkownika":0,search:0,"test\u00f3w":0,welcom:0,index:0,modul:0,indic:0,edytora:0,content:0,tabl:0,knut:0,document:0,page:0,"podr\u0119cznik":0},objtypes:{},titles:["Welcome to Podr\u0119cznik u\u017cytkownika edytora test\u00f3w Knut&#8217;s documentation!"],objnames:{},filenames:["index"]})
